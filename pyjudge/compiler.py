@@ -222,3 +222,32 @@ class CppCompiler(CLikeCompiler):
     def __init__(self, source_path):
         return CLikeCompiler.__init__(self, source_path, 'C++')
     pass
+
+@wrap_compiler
+class ExecutableCompiler(Compiler):
+    """ Compiler that only runs executables. Discouraged when using. Should take
+    special care when running untrusted code on servers. """
+
+    def compile(self, override_command=None):
+        try:
+            f_handle = open(self.source_path, 'r')
+            f_handle.close()
+        except:
+            raise CompilerError('Unable to open file')
+        ret_result = {
+            'return_code': 0,
+            'output': '',
+        }
+        return ret_result
+
+    def execute(self, **kwargs):
+        proc = process.Process(
+            process_args=[self.source_path],
+            **kwargs
+        )
+        ret_result = proc.execute()
+        return ret_result
+
+    def close(self):
+        return
+    pass
