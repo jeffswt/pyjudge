@@ -31,7 +31,10 @@ class Process:
         self.time_limit = time_limit
         self.memory_limit = memory_limit
         self.process_args = process_args
-        self.stdin = stdin
+        if type(stdin) == bytes:
+            self.stdin = stdin
+        else:
+            self.stdin = stdin.encode('utf-8')
         return
     def execute(self):
         # Starting process
@@ -44,6 +47,7 @@ class Process:
         # Writing input to process
         if len(self.stdin) > 0:
             proc.stdin.write(self.stdin)
+            proc.stdin.flush()
         # Setting time limit
         if self.time_limit > 0:
             def time_delimiter(time_begin, time_limit, proc):
