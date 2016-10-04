@@ -83,9 +83,9 @@ class PythonCompiler(Compiler):
     def __init__(self, source_path, version_number):
         Compiler.__init__(self, source_path)
         if version_number == 2:
-            self.__python_args = config.get_config('python2_path')
+            self.__python_args = config.get_config('python2_args')
         elif version_number == 3:
-            self.__python_args = config.get_config('python3_path')
+            self.__python_args = config.get_config('python3_args')
         else:
             raise AttributeError('Unknown Python version')
         return
@@ -106,11 +106,11 @@ class PythonCompiler(Compiler):
 
     def execute(self, **kwargs):
         args = self.__python_args
-        for i in len(args):
-            args = args.format(source_path=self.source_path)
+        for i in range(0, len(args)):
+            args[i] = args[i].format(source_file=self.source_path)
         # Formatted arguments, executing
         p = process.Process(
-            process_args=self.__python_args,
+            process_args=args,
             **kwargs
         )
         return p.execute()
