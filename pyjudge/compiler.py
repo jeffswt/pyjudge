@@ -251,3 +251,61 @@ class ExecutableCompiler(Compiler):
     def close(self):
         return
     pass
+
+@wrap_compiler
+class AdaptiveCompiler(Compiler):
+    """ Adaptive compiler, adapts compilation method through input or given
+    method type. """
+    def __init__(self, source_path, source_type=None):
+        Compiler.__init__(self, source_path)
+        if not source_type:
+            src_match = {
+                r'.txt$': 'Text',
+                r'.in$': 'Text', # De-facto standards by CCF
+                r'.out$': 'Text', # De-facto standards by CCF
+                r'.cpp$': 'C++',
+                r'.c\+\+$': 'C++',
+                r'.c$': 'C',
+                r'.py$': 'Python3',
+                r'.py3$': 'Python3', # Non-standard
+                r'.py2$': 'Python2', # Non-standard
+                r'.java$': 'Java',
+                r'.exe$': 'Executable', # Windows executable
+                r'^[~.]$': 'Executable', # We treat them as executable
+            }
+            for i in src_match:
+                j = src_match[i]
+                if re.findall(i, source_path):
+                    source_type = j
+                    break
+                continue
+            if not source_type:
+                source_type = 'Text'
+            pass
+        # Determined source_path, now creating new compilers for use...
+        comp_match = {
+            'Text': FileHandleCompiler,
+            'C++': CppCompiler,
+            'C': CCompiler,
+            'Python3': Python3Compiler,
+            'Python2': Python2Compiler,
+            'Executable': ExecutableCompiler,
+        }
+        comp_is = Compiler
+        for i in comp_match:
+            if source_type == i:
+                comp_is = comp_match[i]
+                break
+            continue
+        self.__actual_compiler = comp_is(source_path)
+        return
+
+    def compile(self, *args, **kwargs):
+        return self.__actual_compiler.compile(*args, **kwargs)
+
+    def execute(self, *args, **kwargs):
+        return self.__actual_compiler.execute(*args, **kwargs)
+
+    def close(self, *args, **kwargs):
+        return self.__actual_compiler.close(*args, **kwargs)
+    pass
