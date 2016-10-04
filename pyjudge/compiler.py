@@ -64,3 +64,32 @@ class Compiler:
     def close(self):
         """ close() -- Free executable file. """
         raise NotImplementedError()
+
+@wrap_compiler
+class FileHandleCompiler(Compiler):
+    """ Handles a file in Unicode encoding. Does not actually compile files,
+    only provides a compiler-like interface for files' handling. """
+
+    def compile(self):
+        try:
+            self.__file_handle = open(self.source_path, 'r')
+        except Exception:
+            raise CompilerError('Failed to open file')
+        return
+
+    def execute(self):
+        return
+
+    def get_output(self):
+        try:
+            self.__file_data = self.__file_handle.read()
+        except Exception:
+            raise CompilerError('Failed to read from file')
+        return self.__file_data
+
+    def close(self):
+        self.__file_handle.close()
+        del self.__file_handle
+        del self.__file_data
+        return
+    pass
