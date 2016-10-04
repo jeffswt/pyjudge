@@ -27,11 +27,20 @@ def wrap_compiler(input_class):
             ret = input_class.compile(self, *args, **kwargs)
             if ret['return_code'] == 0:
                 self.__sequence = 1
+            ret['output'] = ret['output'].replace('\r', '')
             return ret
         def execute(self, *args, **kwargs):
             if self.__sequence != 1:
                 raise AttributeError('Source code hadn\'t been compiled')
             ret = input_class.execute(self, *args, **kwargs)
+            # Converting bytes to str
+            def __create_clean_str(dat):
+                if type(dat) == bytes:
+                    dat = dat.decode('utf-8', 'ignore')
+                dat = dat.replace('\r', '')
+                return dat
+            ret['stdout'] = __create_clean_str(ret['stdout'])
+            ret['stderr'] = __create_clean_str(ret['stderr'])
             return ret
         def close(self):
             if self.__sequence != 1:
