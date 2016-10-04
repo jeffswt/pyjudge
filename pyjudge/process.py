@@ -42,31 +42,32 @@ class Process:
         # Marking begin timestamp
         time_begin = time.time()
         # Writing input to process
-        if len(stdin) > 0:
+        if len(self.stdin) > 0:
             proc.stdin.write(self.stdin)
         # Setting time limit
-        if time_limit > 0:
+        if self.time_limit > 0:
             def time_delimiter(time_begin, time_limit, proc):
                 while True:
                     time_cur = time.time()
-                    if time_cur - time.begin >= time_limit:
+                    time.sleep(0.015)
+                    # This might delay a few seconds...
+                    if time_cur - time_begin >= time_limit:
                         proc.kill()
                         break
-                        time.sleep(0.015)
-                        continue
-                        return
+                    continue
+                return
             threading.Thread(
                 target=time_delimiter,
                 args=(time_begin, self.time_limit, proc)
             ).start()
         # Waiting for process to terminate
         ret_code = proc.wait()
-        # Retrieving process results
-        stdout = proc.stdout.read()
-        stderr = proc.stderr.read()
         # Retrieving process execution time
         time_final = time.time()
         time_delta = time_final - time_begin
+        # Retrieving process results (BINARY!)
+        stdout = proc.stdout.read()
+        stderr = proc.stderr.read()
         # Setting final results
         final_results = {
             'time': time_delta,
