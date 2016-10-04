@@ -17,15 +17,23 @@ def wrap_compiler(input_class):
             self.__sequence = 0
             return ret
         def compile(self, *args, **kwargs):
-            if self.__sequence != 0:
+            if self.__sequence not in {0, 1}:
                 raise AttributeError('Source code already compiled')
+            if self.__sequence == 1:
+                input_class.close(self)
             ret = input_class.compile(self, *args, **kwargs)
-            self.__sequence = 1
+            if ret['return_code'] == 0:
+                self.__sequence = 1
             return ret
         def execute(self, *args, **kwargs):
             if self.__sequence != 1:
                 raise AttributeError('Source code hadn\'t been compiled')
             ret = input_class.execute(self, *args, **kwargs)
+            return ret
+        def close(self):
+            if self.__sequence != 1:
+                raise AttributeError('Nothing to remove')
+            ret = input_class.close(self)
             return ret
         pass
     return CompilerWrapper
@@ -44,8 +52,12 @@ class Compiler:
         """ compile() -- Compile the source code into executable. """
         raise NotImplementedError()
 
-    def execute(self, stdin=''):
+    def execute(self, **kwargs):
         """ execute() -- Execute compiled executable. """
+        raise NotImplementedError()
+
+    def close(self):
+        """ close() -- Remove compiled executable. """
         raise NotImplementedError()
     pass
 
@@ -73,7 +85,12 @@ class FileHandleCompiler(Compiler):
             'stdout': self.__file_handle.read(),
             'stderr': '',
         }
+        self.__file_handle.seek(0)
         return ret_result
+
+    def close(self):
+        self.__file_handle.close()
+        return
     pass
 
 @wrap_compiler
@@ -114,6 +131,9 @@ class PythonCompiler(Compiler):
             **kwargs
         )
         return p.execute()
+
+    def close(self):
+        return
     pass
 
 @wrap_compiler
@@ -166,8 +186,10 @@ class CLikeCompiler(Compiler):
             'output': ret_result_old['stderr'].decode('utf-8', 'ignore'),
         }
         # Some hotfixes on Windows...
-        try: os.rename(out_file + '.exe', out_file)
-        except: pass
+        try:
+            os.rename(out_file + '.exe', out_file)
+        except:
+            pass
         # Done compilation
         return ret_result
 
@@ -178,6 +200,13 @@ class CLikeCompiler(Compiler):
         )
         ret_result = proc.execute()
         return ret_result
+
+    def close(self):
+        try:
+            os.remove(self.__c_executable)
+        except:
+            pass
+        return
     pass
 
 @wrap_compiler
