@@ -2,6 +2,7 @@
 import os
 from . import config
 from . import process
+from . import tmpmgmt
 
 class CompilerError(Exception):
     def __init__(self, *args):
@@ -129,3 +130,61 @@ class Python3Compiler(PythonCompiler):
         return PythonCompiler.__init__(self, source_path, 3)
     pass
 
+@wrap_compiler
+class CLikeCompiler(Compiler):
+    """ C / C++ / C-Style compiler, invokes GCC or G++, used this as an
+    abbreviation for fewer code lines. """
+
+    def __init__(self, source_path, language_type):
+        Compiler.__init__(self, source_path)
+        if language_type == 'C':
+            self.__c_args = config.get_config('gcc_args')
+        elif language_type == 'C++':
+            self.__c_args = config.get_config('g++_args')
+        else:
+            raise AttributeError('Unknown C/Style language type')
+        return
+
+    def compile(self, override_command=None):
+        args = self.__c_args
+        out_file = tmpmgmt.create_tmpfile()
+        self.__c_executable = out_file
+        for i in range(0, len(args)):
+            args[i] = args[i].format(
+                source_file=self.source_path,
+                output_file=out_file)
+            pass
+        # Some hotfixes on Windows...
+        try: os.rename(out_file + '.exe', out_file)
+        except: pass
+        # Formatted arguments, executing
+        proc = process.Process(
+            time_limit=0,
+            memory_limit=0,
+            process_args=args
+        )
+        ret_result = proc.execute()
+        return ret_result
+
+    def execute(self, **kwargs):
+        proc = process.Process(
+            process_args=[self.__c_executable],
+            **kwargs
+        )
+        ret_result = proc.execute()
+        return ret_result
+    pass
+
+@wrap_compiler
+class CCompiler(CLikeCompiler):
+    """ C Compiler, wraps CLikeCompiler. """
+    def __init__(self, source_path):
+        return CLikeCompiler.__init__(self, source_path, 'C')
+    pass
+
+@wrap_compiler
+class CppCompiler(CLikeCompiler):
+    """ C++ Compiler, wraps CLikeCompiler. """
+    def __init__(self, source_path):
+        return CLikeCompiler.__init__(self, source_path, 'C++')
+    pass
