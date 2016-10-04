@@ -1,3 +1,12 @@
+
+import os
+
+class CompilerError(Exception):
+    def __init__(self, *args):
+        self.args = args
+        return
+    pass
+
 def wrap_compiler(input_class):
     class CompilerWrapper(input_class):
         def __init__(self, source_path):
