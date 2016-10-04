@@ -154,9 +154,6 @@ class CLikeCompiler(Compiler):
                 source_file=self.source_path,
                 output_file=out_file)
             pass
-        # Some hotfixes on Windows...
-        try: os.rename(out_file + '.exe', out_file)
-        except: pass
         # Formatted arguments, executing
         proc = process.Process(
             time_limit=0,
@@ -164,6 +161,10 @@ class CLikeCompiler(Compiler):
             process_args=args
         )
         ret_result = proc.execute()
+        # Some hotfixes on Windows...
+        try: os.rename(out_file + '.exe', out_file)
+        except: pass
+        # Done compilation
         return ret_result
 
     def execute(self, **kwargs):
