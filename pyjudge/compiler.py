@@ -9,31 +9,20 @@ class CompilerError(Exception):
 
 def wrap_compiler(input_class):
     class CompilerWrapper(input_class):
-        def __init__(self, source_path):
-            ret = input_class.__init__(self, source_path)
+        def __init__(self, *args, **kwargs):
+            ret = input_class.__init__(self, *args, **kwargs)
             self.__sequence = 0
             return ret
-        def compile(self):
+        def compile(self, *args, **kwargs):
             if self.__sequence != 0:
                 raise AttributeError('Source code already compiled')
-            ret = input_class.compile(self)
+            ret = input_class.compile(self, *args, **kwargs)
             self.__sequence = 1
             return ret
-        def execute(self):
+        def execute(self, *args, **kwargs):
             if self.__sequence != 1:
                 raise AttributeError('Source code hadn\'t been compiled')
-            ret = input_class.execute(self)
-            self.__sequence = 2
-            return ret
-        def get_output(self):
-            if self.__sequence != 2:
-                raise AttributeError('No execution had been made')
-            ret = input_class.get_output(self)
-            return ret
-        def close(self):
-            if self.__sequence == 0:
-                raise AttributeError('Compiler handle already closed')
-            ret = input_class.close(self)
+            ret = input_class.execute(self, *args, **kwargs)
             self.__sequence = 0
             return ret
         pass
@@ -56,14 +45,7 @@ class Compiler:
     def execute(self):
         """ execute() -- Execute compiled executable. """
         raise NotImplementedError()
-
-    def get_output(self):
-        """ get_output() -- Receive execution output in string. """
-        raise NotImplementedError()
-
-    def close(self):
-        """ close() -- Free executable file. """
-        raise NotImplementedError()
+    pass
 
 @wrap_compiler
 class FileHandleCompiler(Compiler):
@@ -93,3 +75,7 @@ class FileHandleCompiler(Compiler):
         del self.__file_data
         return
     pass
+
+@wrap_compiler
+class PythonCompiler(Compiler):
+    """
