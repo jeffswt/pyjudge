@@ -4,6 +4,25 @@ import threading
 import time
 
 class Process:
+    """ One-off process execution, when invoked with the following arguments,
+    it returns the execution results in corresponding relevances.
+
+        time_limit: Execution time limit in seconds. If set to zero, this means
+                that there will be no time limit.
+        memory_limit: Memory limit of execution in bytes. If set to zero, this
+                means that there will be no memory limit.
+        process_args: Arguments to be passed to process creation.
+        stdin: The standard input to be injected to subprocess, default to none.
+
+    The return value should be a dictionary, containing the following elements:
+
+        time: Cost of time of execution in seconds.
+        memory: Cost of memory in bytes.
+        return_code: The return code of the program. 0 if succeeded.
+        stdout: Standard output.
+        stderr: Error output.
+
+    The process would **NOT** be called interactively. """
     def __init__(self,
             time_limit=0,
             memory_limit=64*1024*1024*1024,
