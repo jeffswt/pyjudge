@@ -16,6 +16,7 @@ def create_tmpfile():
         if not os.path.exists(pth):
             break
         continue
+    __tmp_files.add(uid)
     return pth
 
 def remove_tmpfile(fil):

@@ -1,5 +1,8 @@
 
+import copy
 import os
+import re
+
 from . import config
 from . import process
 from . import tmpmgmt
@@ -122,7 +125,7 @@ class PythonCompiler(Compiler):
         return ret_result
 
     def execute(self, **kwargs):
-        args = self.__python_args
+        args = copy.deepcopy(self.__python_args)
         for i in range(0, len(args)):
             args[i] = args[i].format(source_file=self.source_path)
         # Formatted arguments, executing
@@ -166,7 +169,7 @@ class CLikeCompiler(Compiler):
         return
 
     def compile(self, override_command=None):
-        args = self.__c_args
+        args = copy.deepcopy(self.__c_args)
         out_file = tmpmgmt.create_tmpfile()
         self.__c_executable = out_file
         for i in range(0, len(args)):
@@ -202,10 +205,7 @@ class CLikeCompiler(Compiler):
         return ret_result
 
     def close(self):
-        try:
-            os.remove(self.__c_executable)
-        except:
-            pass
+        tmpmgmt.remove_tmpfile(self.__c_executable)
         return
     pass
 
