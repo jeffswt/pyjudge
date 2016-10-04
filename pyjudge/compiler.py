@@ -160,7 +160,11 @@ class CLikeCompiler(Compiler):
             memory_limit=0,
             process_args=args
         )
-        ret_result = proc.execute()
+        ret_result_old = proc.execute()
+        ret_result = {
+            'return_code': ret_result_old['return_code'],
+            'output': ret_result_old['stderr'].decode('utf-8', 'ignore'),
+        }
         # Some hotfixes on Windows...
         try: os.rename(out_file + '.exe', out_file)
         except: pass

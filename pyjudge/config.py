@@ -17,8 +17,8 @@ Others would be implemented by this module.
 __configs = {
     # 'tmp_dir': 'C:/Users/Administrator/AppData/Temp/PyJudge/',
     'tmp_dir': './PyJudgeTemp/',
-    'gcc_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe', '-O0', '-g0', '-o' '{output_file}', '{source_file}'],
-    'g++_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe', '-O0', '-g0', '-o' '{output_file}', '{source_file}'],
+    'gcc_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
+    'g++_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
     'fpc_args': None,
     'python2_args': ['C:/Programs/Python2/python2.exe', '{source_file}'],
     'python3_args': ['C:/Programs/Python3/python3.exe', '{source_file}'],
