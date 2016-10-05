@@ -20,6 +20,9 @@ class Table:
     def wrap_lines(self, line, width, align='left'):
         res = []
         def __do_wrap_line(lin):
+            max_width = config.get_config('table_max_linewidth')
+            if len(lin) > max_width:
+                lin = lin[:max_width] + '... [%d Chars]' % len(lin)
             tres = []
             while lin:
                 tmp = lin[:width]
@@ -68,16 +71,18 @@ class Table:
         self.title = title
         self.data = []
         for row in data:
-            self.data.append((str(row[0]), str(row[1])))
+            self.data.append((row[0], row[1]))
         return
     def __repr__(self):
+        return self.to_cli()
+    def to_cli(self):
         console_width = 80
         row_widths = [int(console_width * 0.25) - 3, console_width - int(console_width * 0.25) + 3]
         out_l = []
         out_l += self.join_wrap_lines(' ', self.title, lwidth=1, rwidth=console_width-1, ralign='left')
         out_l.append('=' * row_widths[0] + '=+=' + '=' * row_widths[1])
         for row in self.data:
-            tmp_l = self.join_wrap_lines(row[0], row[1], lwidth=row_widths[0], rwidth=row_widths[1], lalign='right', ralign='left')
+            tmp_l = self.join_wrap_lines(str(row[0]), str(row[1]), lwidth=row_widths[0], rwidth=row_widths[1], lalign='right', ralign='left')
             out_l += self.insert_in_lines(tmp_l[:1], row_widths[0], ' T ') + self.insert_in_lines(tmp_l[1:], row_widths[0], ' | ')
         fmt_s = ''
         for line in out_l:
