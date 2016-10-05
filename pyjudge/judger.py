@@ -1,6 +1,10 @@
 
+import copy
+
 from . import compiler
+from . import config
 from . import process
+from . import table
 
 class JudgerError(Exception):
     def __init__(self, *args):
@@ -27,16 +31,16 @@ class JudgerResult:
         self.stdout_execute_result = stdout_execute_result
         return
     def __repr__(self):
-        # return repr(table.Table('Process Execution Results', [
-        #     ('Judge Result', status_codes[self.judge_result]),
-        #     ('Execution Time', self.out_execute_result.time),
-        #     ('Memory Cost', self.out_execute_result.memory),
-        #     ('Return Code', self.out_execute_result.return_code),
-        #     ('Compile Output', self.out_compile_result.output)
-        #     ('Input', self.input_execute_result.stdout)
-        #     ('Output', self.out_execute_result.stdout),
-        #     ('Standard Output', self.stdout_execute_result.stdout),
-        # ]))
+        return repr(table.Table('Process Execution Results', [
+            ('Judge Result', status_codes[self.judge_result]),
+            ('Execution Time', self.out_execute_result.time),
+            ('Memory Cost', self.out_execute_result.memory),
+            ('Return Code', self.out_execute_result.return_code),
+            ('Compile Output', self.out_compile_result.output),
+            ('Input', self.input_execute_result.stdout),
+            ('Output', self.out_execute_result.stdout),
+            ('Standard Output', self.stdout_execute_result.stdout),
+        ]))
         pass
     def clone(self,
             judge_result = None,
@@ -108,6 +112,12 @@ class DataComparisonJudger(Judger):
             raise AttributeError('Must provide output handle')
         if not stdout_handle:
             raise AttributeError('Must provide standard output handle')
+        if type(input_handle) == str:
+            input_handle = compiler.AdaptiveCompiler(input_handle)
+        if type(out_handle) == str:
+            out_handle = compiler.AdaptiveCompiler(out_handle)
+        if type(stdout_handle) == str:
+            stdout_handle = compiler.AdaptiveCompiler(stdout_handle)
         self.input_handle = input_handle
         self.out_handle = out_handle
         self.stdout_handle = stdout_handle
@@ -189,7 +199,7 @@ class DataComparisonJudger(Judger):
         def __strip_down_all(s_in):
             s_in = [s_in]
             for i in ' \t\r\n':
-                s_in = __strip_down(s_in)
+                s_in = __strip_down(s_in, i)
             return s_in
         out_s = self.j_result.out_execute_result.stdout
         stdout_s = self.j_result.stdout_execute_result.stdout
