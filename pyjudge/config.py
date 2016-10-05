@@ -17,6 +17,7 @@ Others would be implemented by this module.
 __configs = {
     # 'tmp_dir': 'C:/Users/Administrator/AppData/Temp/PyJudge/',
     'tmp_dir': './PyJudgeTemp/',
+    'max_output': 64*1024*1024, # 64 MB Maximum allowed output
     'gcc_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
     'g++_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
     'fpc_args': None,

@@ -100,6 +100,29 @@ class DataComparisonJudger(Judger):
         self.out_handle = out_handle
         self.stdout_handle = stdout_handle
         self.seed = seed
+        # Precompiling input
+        self.j_result = JudgerResult(judge_result='AC')
+        try:
+            self.j_result.input_compile_result = self.input_handle.compile()
+        except compiler.CompilerError as err:
+            self.j_result.judge_result = 'IJI'
+            self.j_result.input_compile_result = compiler.CompilerResult(output=err.args[0])
+            return
+        # Precompiling stdout
+        try:
+            self.j_result.stdout_compile_result = self.stdout_handle.compile()
+        except compiler.CompilerError as err:
+            self.j_result.judge_result = 'IJI'
+            self.j_result.stdout_compile_result = compiler.CompilerResult(output=err.args[0])
+            return
+        # Precompiling user program
+        try:
+            self.j_result.out_compile_result = self.out_handle.compile()
+        except compiler.CompilerError as err:
+            self.j_result.judge_result = 'CE'
+            self.j_result.out_compile_result = compiler.CompilerResult(output=err.args[0])
+            return
+        # Compile success
         return
 
     def judge(self, time_limit=0, memory_limit=0):
