@@ -2,11 +2,11 @@
 import mako
 import mako.template
 
+from . import vis_html_data
+
 def create(json_data):
     """ Create visualized HTML with JSON input in dict(). """
-    f_handle_1 = open('./pyjudge/visualize/static/index.html')
-    data = f_handle_1.read()
-    f_handle_1.close()
+    data = vis_html_data.html_template_data
     if type(data) == bytes:
         data = data.decode('utf-8', 'ignore')
     data = mako.template.Template(

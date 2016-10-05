@@ -5,6 +5,7 @@ import optparse
 from . import compiler
 from . import judger
 from . import table
+from . import visualize
 
 __version = '20161005-dev'
 
@@ -43,19 +44,36 @@ opts.add_option('-s', '--seed',
 opts.add_option('-j', '--json-output',
         dest='json_output_file', type='string', default='./results.json',
         help='Output location of exact results in JSON')
-opts.add_option('--json-export-io',
-        dest='json_export_io', action='store_true', default=False,
-        help='Export Input/Output data in JSON')
-
-# opts.add_option('-v', '--visualize',
-#         dest='visualization', type='string', default='cli',
-#         help='Visualize JSON output in HTML')
+opts.add_option('--json-no-io',
+        dest='json_export_io', action='store_false', default=True,
+        help='Do not export Input/Output data in JSON')
+opts.add_option('-v', '--visualize',
+        dest='json_file', type='string', default='',
+        help='Visualize JSON output in HTML')
 
 commands, args = opts.parse_args()
 
 # Main function
 
+import os
+
 def main():
+    if commands.json_file:
+        f_handle = open(commands.json_file, 'r', encoding='utf-8')
+        json_stringify = f_handle.read()
+        f_handle.close()
+        json_data = json.loads(json_stringify)
+        html_data = visualize.create(json_data)
+        f_handle = open('./results.html', 'w', encoding='utf-8') # We are not using temp...
+        f_handle.write(html_data)
+        f_handle.close()
+        try:
+            os.startfile('./results.html')
+        except:
+            os.startfile('.\\results.html')
+        return 0
+
+    # Normal actions
     try:
         if not commands.input:
             raise Exception()
@@ -66,7 +84,7 @@ def main():
     except:
         print('pyjudge: fatal error: arguments insufficient')
         print('judge process terminated')
-        exit(1)
+        return 1
 
     # Compiling source codes
     print('--> Compiling source codes...')
@@ -147,6 +165,7 @@ def main():
         },
         'judger-output': [],
     }
+    show_output = commands.json_export_io != ''
     for result_id in range(0, len(all_results)):
         results = all_results[result_id]
         json_output['judger-output'].append({
@@ -175,6 +194,9 @@ def main():
                     'stderr': results.out_execute_result.stderr if commands.json_export_io else '',
                 },
             },
+            'judge-result': results.judge_result,
+            'judge-result-str': judger.status_codes[results.judge_result],
+            'display-output': commands.json_export_io != '',
         })
     json_stringify = json.dumps(
         json_output,
@@ -191,4 +213,4 @@ def main():
         print('!!! Unable to write to JSON file.')
     else:
         print('... Succeeded.')
-    return
+    return 0
