@@ -126,6 +126,43 @@ class DataComparisonJudger(Judger):
         return
 
     def judge(self, time_limit=0, memory_limit=0):
+        # Checking pre-compile errors:
+        if self.j_result.judge_result != 'AC':
+            return self.j_result.clone()
+        # Running standard input
+        if self.seed:
+            self.j_result.input_execute_result = self.input_handle.execute(additional_args=[self.seed])
+        else:
+            self.j_result.input_execute_result = self.input_handle.execute()
+        if self.j_result.input_execute_result.return_code != 0:
+            return self.j_result.clone(judge_result='IJI')
+        # Running standard output
+        self.j_result.stdout_execute_result = self.stdout_handle.execute(
+            time_limit = time_limit,
+            memory_limit = memory_limit,
+            stdin = self.j_result.input_execute_result.stdout
+        )
+        if self.j_result.stdout_execute_result.return_code != 0:
+            return self.j_result.clone(judge_result='IJI')
+        # Running user program
+        self.j_result.out_execute_result = self.out_handle.execute(
+            time_limit = time_limit,
+            memory_limit = memory_limit,
+            stdin = self.j_result.input_execute_result.stdout
+        )
+        # Pretended delimitations
+        expected_out = self.j_result.out_execute_result
+        if expected_out.time >= time_limit > 0:
+            return self.j_result.clone(judge_result='TLE')
+        if expected_out.memory >= memory_limit > 0:
+            return self.j_result.clone(judge_result='MLE')
+        if len(expected_out.stdout) >= config.get_config('max_output'):
+            return self.j_result.clone(judge_result='OLE')
+        if len(expected_out.stderr) >= config.get_config('max_output'):
+            return self.j_result.clone(judge_result='OLE')
+        if expected_out.return_code != 0:
+            return self.j_result.clone(judge_result='RE')
+        # Done delimitating, now checking result
         def __strip_down(s_in, flag):
             lout = list()
             for i in s_in:
@@ -142,20 +179,14 @@ class DataComparisonJudger(Judger):
             for i in ' \t\r\n':
                 s_in = __strip_down(s_in)
             return s_in
-        # Checking info
-        if out_str['time'] > time_limit > 0:
-            return 'TLE'
-        if out_str['memory'] > memory_limit > 0:
-            return 'MLE'
-        if out_str['return_code'] != 0:
-            return 'RE'
-        out_s = out_str['stdout']
-        stdout_s = stdout_str['stdout']
+        out_s = self.j_result.out_execute_result.stdout
+        stdout_s = self.j_result.stdout_execute_result.stdout
         out_l = __strip_down_all(out_s)
         stdout_l = __strip_down_all(stdout_s)
         if out_l != stdout_l:
-            return 'WA'
+            return self.j_result.clone(judge_result='WA')
+        # Answer correct, checking presentation errors
         if out_s != stdout_s:
-            return 'PE'
-        return 'AC'
+            return self.j_result.clone(judge_result='PE')
+        return self.j_result.clone()
     pass
