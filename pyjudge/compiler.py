@@ -37,16 +37,21 @@ def wrap_compiler(input_class):
             self.__compile_result = None
             return ret
         def compile(self, *args, **kwargs):
-            if self.__sequence == 1:
-                self.close()
             if self.__compile_result != None:
                 if self.__compile_result.return_code != 0:
                     raise CompilerError(self.__compile_result.output)
-            ret = input_class.compile(self, *args, **kwargs)
-            if ret.return_code == 0:
+                return self.__compile_result
+            try:
+                ret = input_class.compile(self, *args, **kwargs)
+                self.__compile_result = ret
+                ret.output = ret.output.replace('\r', '')
+                if ret.return_code != 0:
+                    raise CompilerError(ret.output)
                 self.__sequence = 1
-            ret.output = ret.output.replace('\r', '')
-            self.__compile_result = ret
+            except CompilerError as err:
+                out = err.args[0].replace('\r', '')
+                self.__compile_result = CompilerResult(return_code=1, output=err.args[0])
+                raise err
             return ret
         def compiled(self):
             return self.__sequence == 1
