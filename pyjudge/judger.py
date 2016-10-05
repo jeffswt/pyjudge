@@ -150,9 +150,11 @@ class Judger:
         return
 
     def judge(self, *args, **kwargs):
+        """ judge(...) -- Get judger result """
         raise NotImplementedError()
 
     def close(self):
+        """ close() -- Closes all handles this judger owns executively. """
         raise NotImplementedError()
     pass
 
