@@ -8,6 +8,26 @@ class JudgerError(Exception):
         return
     pass
 
+class JudgerResult:
+    """ Result of judger. """
+    def __init__(self,
+            judge_result = 'IJI',
+            input_compile_result = compiler.CompilerResult(),
+            input_execute_result = process.ProcessResult(),
+            out_compile_result = compiler.CompilerResult(),
+            out_execute_result = process.ProcessResult(),
+            stdout_compile_result = compiler.CompilerResult(),
+            stdout_execute_result = process.ProcessResult()):
+        self.judge_result = judge_result
+        self.input_compile_result = input_compile_result
+        self.input_execute_result = input_execute_result
+        self.out_compile_result = out_compile_result
+        self.out_execute_result = out_execute_result
+        self.stdout_compile_result = stdout_compile_result
+        self.stdout_execute_result = stdout_execute_result
+        return
+    pass
+
 status_codes = {
     'AC': 'Accepted',
     'CE': 'Compile Error',
@@ -15,12 +35,18 @@ status_codes = {
     'RE': 'Runtime Error',
     'TLE': 'Time Limit Exceeded',
     'MLE': 'Memory Limit Exceeded',
+    'OLE': 'Output Limit Exceeded',
     'PE': 'Presentation Error',
+    'IJI': 'Invalid Judger Input',
 }
 
 class Judger:
     """ Base judger, always returns NotImplementedError on all actions. Extend
-    this class for further functionalities. """
+    this class for further functionalities.
+
+    Additional arguments must be passed in upon __init__. judge() function upon
+    call should be accustomed with limits, when necessary. It always should
+    return a dict() with a JudgerResult. """
 
     def __init__(self):
         return
@@ -31,7 +57,16 @@ class Judger:
 
 class DataComparisonJudger(Judger):
     """ Compares data between files, will raise presentation error if found
-    correct answer yet incorrect formatting. """
+    correct answer yet incorrect formatting. Receives following arguments at
+    initialization:
+
+        input_handle : Input file handle
+        out_handle : User output handle
+        stdout_handle : Handle of standard output
+        seed : Random seed, randomize if not given
+
+    Used to judge I/O from local files. """
+
 
     def judge(self, out_str, stdout_str, time_limit=0, memory_limit=0):
         def __strip_down(s_in, flag):
