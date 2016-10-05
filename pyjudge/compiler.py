@@ -34,17 +34,22 @@ def wrap_compiler(input_class):
         def __init__(self, *args, **kwargs):
             ret = input_class.__init__(self, *args, **kwargs)
             self.__sequence = 0
+            self.__compile_result = None
             return ret
         def compile(self, *args, **kwargs):
-            if self.__sequence not in {0, 1}:
-                raise AttributeError('Source code already compiled')
             if self.__sequence == 1:
-                input_class.close(self)
+                self.close()
+            if self.__compile_result != None:
+                if self.__compile_result.return_code != 0:
+                    raise CompilerError(self.__compile_result.output)
             ret = input_class.compile(self, *args, **kwargs)
             if ret.return_code == 0:
                 self.__sequence = 1
             ret.output = ret.output.replace('\r', '')
+            self.__compile_result = ret
             return ret
+        def compiled(self):
+            return self.__sequence == 1
         def execute(self, *args, **kwargs):
             if self.__sequence != 1:
                 raise AttributeError('Source code hadn\'t been compiled')
@@ -62,7 +67,10 @@ def wrap_compiler(input_class):
             if self.__sequence != 1:
                 raise AttributeError('Nothing to remove')
             ret = input_class.close(self)
+            self.__sequence = 0
             return ret
+        def closed(self):
+            return self.__sequence == 0
         pass
     return CompilerWrapper
 

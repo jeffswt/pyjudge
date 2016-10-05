@@ -37,7 +37,7 @@ class JudgerResult:
             ('Std Run Time', self.stdout_execute_result.time),
             ('Memory Cost', self.out_execute_result.memory),
             ('Return Code', self.out_execute_result.return_code),
-            ('Compile Output', self.out_compile_result.output),
+            ('Compiler Output', self.out_compile_result.output),
         ]
         if self.judge_result == 'IJI':
             table_list += [
@@ -104,6 +104,8 @@ def wrap_judger(input_class):
             ret = input_class.close(self, *args, **kwargs)
             self.__sequence = 0
             return ret
+        def closed(self):
+            return self.__sequence == 0
         pass
     return JudgerWrapper
 
@@ -163,21 +165,24 @@ class DataComparisonJudger(Judger):
         # Precompiling input
         self.j_result = JudgerResult(judge_result='AC')
         try:
-            self.j_result.input_compile_result = self.input_handle.compile()
+            if not self.input_handle.compiled():
+                self.j_result.input_compile_result = self.input_handle.compile()
         except compiler.CompilerError as err:
             self.j_result.judge_result = 'IJI'
             self.j_result.input_compile_result = compiler.CompilerResult(output=err.args[0])
             return
         # Precompiling stdout
         try:
-            self.j_result.stdout_compile_result = self.stdout_handle.compile()
+            if not self.stdout_handle.compiled():
+                self.j_result.stdout_compile_result = self.stdout_handle.compile()
         except compiler.CompilerError as err:
             self.j_result.judge_result = 'IJI'
             self.j_result.stdout_compile_result = compiler.CompilerResult(output=err.args[0])
             return
         # Precompiling user program
         try:
-            self.j_result.out_compile_result = self.out_handle.compile()
+            if not self.out_handle.compiled():
+                self.j_result.out_compile_result = self.out_handle.compile()
         except compiler.CompilerError as err:
             self.j_result.judge_result = 'CE'
             self.j_result.out_compile_result = compiler.CompilerResult(output=err.args[0])
@@ -253,17 +258,11 @@ class DataComparisonJudger(Judger):
         return self.j_result.clone()
 
     def close(self):
-        try:
+        if not self.input_handle.closed():
             self.input_handle.close()
-        except:
-            pass
-        try:
+        if not self.out_handle.closed():
             self.out_handle.close()
-        except:
-            pass
-        try:
+        if not self.stdout_handle.closed():
             self.stdout_handle.close()
-        except:
-            pass
         return
     pass
