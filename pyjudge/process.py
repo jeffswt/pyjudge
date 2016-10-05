@@ -75,8 +75,9 @@ class Process:
             proc.stdin.write(self.stdin)
             proc.stdin.flush()
         # Setting time limit
+        thread_kill = [False,]
         if self.time_limit > 0:
-            def time_delimiter(time_begin, time_limit, proc):
+            def time_delimiter(time_begin, time_limit, proc, thread_kill):
                 while True:
                     time_cur = time.time()
                     time.sleep(0.015)
@@ -84,20 +85,32 @@ class Process:
                     if time_cur - time_begin >= time_limit:
                         proc.kill()
                         break
+                    # Force termination
+                    if thread_kill[0]:
+                        break
                     continue
                 return
             threading.Thread(
                 target=time_delimiter,
-                args=(time_begin, self.time_limit, proc)
+                args=(time_begin, self.time_limit, proc, thread_kill)
             ).start()
         # Waiting for process to terminate
+        # stdout = b''
+        # stderr = b''
+        # while proc.poll() == None:
+        #     stdout += proc.stdout.read()
+        #     stderr += proc.stderr.read()
+        #     proc.stdout.flush()
+        #     proc.stderr.flush()
+        #     time.sleep(0.015)
+        stdout = proc.stdout.read()
+        stderr = proc.stderr.read()
         ret_code = proc.wait()
+        thread_kill[0] = True
         # Retrieving process execution time
         time_final = time.time()
         time_delta = time_final - time_begin
         # Retrieving process results (BINARY!)
-        stdout = proc.stdout.read()
-        stderr = proc.stderr.read()
         # Setting final results
         final_results = ProcessResult(
             time = time_delta,
