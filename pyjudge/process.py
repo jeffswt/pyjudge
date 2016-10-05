@@ -71,9 +71,12 @@ class Process:
         # Marking begin timestamp
         time_begin = time.time()
         # Writing input to process
-        if len(self.stdin) > 0:
-            proc.stdin.write(self.stdin)
-            proc.stdin.flush()
+        try:
+            if len(self.stdin) > 0:
+                proc.stdin.write(self.stdin)
+                proc.stdin.flush()
+        except BrokenPipeError:
+            pass
         # Setting time limit
         thread_kill = [False,]
         if self.time_limit > 0:
@@ -103,8 +106,12 @@ class Process:
         #     proc.stdout.flush()
         #     proc.stderr.flush()
         #     time.sleep(0.015)
-        stdout = proc.stdout.read()
-        stderr = proc.stderr.read()
+        try:
+            stdout = proc.stdout.read()
+            stderr = proc.stderr.read()
+        except BrokenPipeError:
+            stdout = b''
+            stderr = b''
         ret_code = proc.wait()
         thread_kill[0] = True
         # Retrieving process execution time
