@@ -154,10 +154,19 @@ class DataComparisonJudger(Judger):
             raise AttributeError('Must provide standard output handle')
         if type(input_handle) == str:
             input_handle = compiler.AdaptiveCompiler(input_handle)
+            self.input_handle_is_temp = True
+        else:
+            self.input_handle_is_temp = False
         if type(out_handle) == str:
             out_handle = compiler.AdaptiveCompiler(out_handle)
+            self.out_handle_is_temp = True
+        else:
+            self.out_handle_is_temp = False
         if type(stdout_handle) == str:
             stdout_handle = compiler.AdaptiveCompiler(stdout_handle)
+            self.stdout_handle_is_temp = True
+        else:
+            self.stdout_handle_is_temp = False
         self.input_handle = input_handle
         self.out_handle = out_handle
         self.stdout_handle = stdout_handle
@@ -258,11 +267,11 @@ class DataComparisonJudger(Judger):
         return self.j_result.clone()
 
     def close(self):
-        if not self.input_handle.closed():
+        if not self.input_handle.closed() and self.input_handle_is_temp:
             self.input_handle.close()
-        if not self.out_handle.closed():
+        if not self.out_handle.closed() and self.out_handle_is_temp:
             self.out_handle.close()
-        if not self.stdout_handle.closed():
+        if not self.stdout_handle.closed() and self.stdout_handle_is_temp:
             self.stdout_handle.close()
         return
     pass
