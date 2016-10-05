@@ -43,3 +43,56 @@ opts.add_option('-v', '--visualize',
         help='Type of visualization (cli, json)')
 
 commands, args = opts.parse_args()
+
+# Main function
+
+def main():
+    try:
+        if not commands.input:
+            raise Exception()
+        if not commands.output:
+            raise Exception()
+        if not commands.code:
+            raise Exception()
+    except:
+        print('pyjudge: fatal error: arguments insufficient')
+        print('judge process terminated')
+        exit(1)
+
+    # Create compilers
+    print('--> Compiling source codes...')
+    comp_input = compiler.AdaptiveCompiler(
+        commands.input,
+        source_type = commands.input_type or None)
+    comp_output = compiler.AdaptiveCompiler(
+        commands.output,
+        source_type = commands.output_type or None)
+    comp_code = compiler.AdaptiveCompiler(
+        commands.code,
+        source_type = commands.code_type or None)
+
+    # Judge code
+    j_worker = judger.DataComparisonJudger(
+        input_handle = comp_input,
+        out_handle = comp_code,
+        stdout_handle = comp_output,
+        seed = commands.seed)
+    print('... Compilation complete.')
+    for run_count in range(0, commands.count):
+        print('--> Running judge on test #%d:' % (run_count + 1,))
+        results = j_worker.judge(
+            time_limit = commands.time_limit,
+            memory_limit = commands.memory_limit)
+        print('... Judge complete. Results:')
+        print(results)
+        print('')
+        continue
+
+    # Close compilers at termination
+    if not comp_input.closed():
+        comp_input.close()
+    if not comp_output.closed():
+        comp_output.close()
+    if not comp_code.closed():
+        comp_code.close()
+    return
