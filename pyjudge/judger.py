@@ -26,6 +26,24 @@ class JudgerResult:
         self.stdout_compile_result = stdout_compile_result
         self.stdout_execute_result = stdout_execute_result
         return
+    def clone(self,
+            judge_result = None,
+            input_compile_result = None,
+            input_execute_result = None,
+            out_compile_result = None,
+            out_execute_result = None,
+            stdout_compile_result = None,
+            stdout_execute_result = None):
+        """ Create a clone of oneself, not mutating the original properties. """
+        return JudgerResult(
+            judge_result = copy.deepcopy(judge_result or self.judge_result),
+            input_compile_result = copy.deepcopy(input_compile_result or self.input_compile_result),
+            input_execute_result = copy.deepcopy(input_execute_result or self.input_execute_result),
+            out_compile_result = copy.deepcopy(out_compile_result or self.out_compile_result),
+            out_execute_result = copy.deepcopy(out_execute_result or self.out_execute_result),
+            stdout_compile_result = copy.deepcopy(stdout_compile_result or self.stdout_compile_result),
+            stdout_execute_result = copy.deepcopy(stdout_execute_result or self.stdout_execute_result))
+        pass
     pass
 
 status_codes = {
