@@ -350,6 +350,14 @@ class ExecutableCompiler(Compiler):
     pass
 
 @wrap_compiler
+class PascalCompiler(Compiler):
+    pass
+
+@wrap_compiler
+class JavaCompiler(Compiler):
+    pass
+
+@wrap_compiler
 class AdaptiveCompiler(Compiler):
     """ Adaptive compiler, adapts compilation method through input or given
     method type. """
@@ -388,6 +396,8 @@ class AdaptiveCompiler(Compiler):
             'C': CCompiler,
             'Python3': Python3Compiler,
             'Python2': Python2Compiler,
+            'Java': JavaCompiler,
+            'Pascal': PascalCompiler,
             'Executable': ExecutableCompiler,
         }
         comp_is = Compiler
