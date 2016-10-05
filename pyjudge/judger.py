@@ -219,7 +219,24 @@ class DataComparisonJudger(Judger):
         if out_l != stdout_l:
             return self.j_result.clone(judge_result='WA')
         # Answer correct, checking presentation errors
-        if out_s != stdout_s:
-            return self.j_result.clone(judge_result='PE')
+        check_presentation_errors = False
+        if check_presentation_errors:
+            if out_s != stdout_s:
+                return self.j_result.clone(judge_result='PE')
         return self.j_result.clone()
+
+    def close(self):
+        try:
+            self.input_handle.close()
+        except:
+            pass
+        try:
+            self.out_handle.close()
+        except:
+            pass
+        try:
+            self.output_handle.close()
+        except:
+            pass
+        return
     pass
