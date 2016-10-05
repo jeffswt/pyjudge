@@ -1,24 +1,42 @@
 
+from . import config
+
 class Table:
     @classmethod
-    def wrap_lines(self, lin, width, align='left'):
+    def align_line(self, line, width, align='left'):
+        if len(line) < width:
+            if align == 'left':
+                line = line.ljust(width, ' ')
+            elif align == 'right':
+                line = line.rjust(width, ' ')
+            elif align == 'centre':
+                dist = width - len(line)
+                line = ' ' * (dist - int(dist / 2)) + line + ' ' * int(dist / 2)
+            else:
+                raise AttributeError('Unknown align method')
+            pass
+        return line
+    @classmethod
+    def wrap_lines(self, line, width, align='left'):
         res = []
-        while lin:
-            tmp = lin[:width]
-            lin = lin[width:]
-            if len(tmp) < width:
-                if align == 'left':
-                    tmp = tmp.ljust(width, ' ')
-                elif align == 'right':
-                    tmp = tmp.rjust(width, ' ')
-                elif align == 'centre':
-                    dist = width - len(tmp)
-                    tmp = ' ' * (dist - int(dist / 2)) + tmp + ' ' * int(dist / 2)
-                else:
-                    raise AttributeError('Unknown align method')
-                pass
-            res.append(tmp)
-            continue
+        def __do_wrap_line(lin):
+            tres = []
+            while lin:
+                tmp = lin[:width]
+                lin = lin[width:]
+                tmp = self.align_line(tmp, width, align)
+                tres.append(tmp)
+                continue
+            return tres
+        lines = line.split('\n')
+        while '' in lines:
+            lines.remove('')
+        # Omit additional data.
+        max_lines = int(config.get_config('table_max_lines') / 2) * 2
+        if len(lines) > max_lines:
+            lines = lines[:int(max_lines / 2) - 1] + [self.align_line('...', width, align)] + lines[- int(max_lines / 2) + 1:] + [self.align_line('[%d Lines]' % len(lines), width, align)]
+        for lin in lines:
+            res += __do_wrap_line(lin)
         if len(res) <= 0:
             res.append(' ' * width)
         return res
@@ -48,7 +66,9 @@ class Table:
         return ret_l
     def __init__(self, title, data):
         self.title = title
-        self.data = data
+        self.data = []
+        for row in data:
+            self.data.append((str(row[0]), str(row[1])))
         return
     def __repr__(self):
         console_width = 80
