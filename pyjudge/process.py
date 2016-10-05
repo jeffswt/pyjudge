@@ -3,6 +3,8 @@ import subprocess
 import threading
 import time
 
+from . import table
+
 class ProcessResult:
     """ Result of process execution. """
     def __init__(self,
@@ -17,6 +19,14 @@ class ProcessResult:
         self.stdout = stdout
         self.stderr = stderr
         return
+    def __repr__(self):
+        return repr(table.Table('Process Execution Results', [
+            ('Execution Time', self.time),
+            ('Memory Cost', self.memory),
+            ('Return Code', self.return_code),
+            ('STDOUT Output', self.stdout),
+            ('STDERR Output', self.stderr),
+        ]))
     pass
 
 class Process:

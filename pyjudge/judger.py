@@ -26,6 +26,18 @@ class JudgerResult:
         self.stdout_compile_result = stdout_compile_result
         self.stdout_execute_result = stdout_execute_result
         return
+    def __repr__(self):
+        # return repr(table.Table('Process Execution Results', [
+        #     ('Judge Result', status_codes[self.judge_result]),
+        #     ('Execution Time', self.out_execute_result.time),
+        #     ('Memory Cost', self.out_execute_result.memory),
+        #     ('Return Code', self.out_execute_result.return_code),
+        #     ('Compile Output', self.out_compile_result.output)
+        #     ('Input', self.input_execute_result.stdout)
+        #     ('Output', self.out_execute_result.stdout),
+        #     ('Standard Output', self.stdout_execute_result.stdout),
+        # ]))
+        pass
     def clone(self,
             judge_result = None,
             input_compile_result = None,

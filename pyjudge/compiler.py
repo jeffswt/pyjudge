@@ -5,6 +5,7 @@ import re
 
 from . import config
 from . import process
+from . import table
 from . import tmpmgmt
 
 class CompilerError(Exception):
@@ -21,6 +22,11 @@ class CompilerResult:
         self.return_code = return_code
         self.output = output
         return
+    def __repr__(self):
+        return repr(table.Table('Process Execution Results', [
+            ('Return Code', self.return_code),
+            ('Compiler Output', self.output),
+        ]))
     pass
 
 def wrap_compiler(input_class):
