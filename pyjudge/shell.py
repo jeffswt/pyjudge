@@ -3,6 +3,7 @@ import optparse
 
 from . import compiler
 from . import judger
+from . import table
 
 __version = '20161005-dev'
 
@@ -59,33 +60,47 @@ def main():
         print('judge process terminated')
         exit(1)
 
-    # Create compilers
+    # Compiling source codes
     print('--> Compiling source codes...')
+    # print('--> Compiling input source...')
     comp_input = compiler.AdaptiveCompiler(
         commands.input,
         source_type = commands.input_type or None)
+    # comp_input.compile()
+    # print('... Compilation complete.')
+
+    # print('--> Compiling standard output...')
     comp_output = compiler.AdaptiveCompiler(
         commands.output,
         source_type = commands.output_type or None)
+    # comp_output.compile()
+    # print('... Compilation complete.')
+
+    # print('--> Compiling user code...')
     comp_code = compiler.AdaptiveCompiler(
         commands.code,
         source_type = commands.code_type or None)
+    # comp_code.compile()
+    # print('... Compilation complete.')
 
-    # Judge code
+    # Compile files with judger
     j_worker = judger.DataComparisonJudger(
         input_handle = comp_input,
         out_handle = comp_code,
         stdout_handle = comp_output,
         seed = commands.seed)
     print('... Compilation complete.')
+
+    # Judging results
+    all_results = []
     for run_count in range(0, commands.count):
         print('--> Running judge on test #%d:' % (run_count + 1,))
         results = j_worker.judge(
             time_limit = commands.time_limit,
             memory_limit = commands.memory_limit)
+        all_results.append(results)
         print('... Judge complete. Results:')
         print(results)
-        print('')
         continue
 
     # Close compilers at termination
@@ -95,4 +110,13 @@ def main():
         comp_output.close()
     if not comp_code.closed():
         comp_code.close()
+
+    # Print final results
+    print('--> All tests done.')
+    tab_inp = []
+    for i in range(0, len(all_results)):
+        res = all_results[i]
+        tab_inp.append((i + 1, judger.status_codes[res.judge_result]))
+    tab = table.Table(title='Aggregative results', data=tab_inp)
+    print(tab)
     return
