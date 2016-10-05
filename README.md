@@ -153,3 +153,107 @@ The command line utility can create JSON output, from which you can visualize
 the output in HTML, through the same command line utility. The hierarchy works
 as follows:
 
+```JSON
+{
+    "compiler-output": {
+        "input": {
+            "output": "g++: fatal error: no input files\ncompilation terminated.",
+            "return-code": 1
+        },
+        "output": {
+            "output": "Traceback (most recent call last):\n  File \"<stdin>\", line 2, in <module>\nKeyboardInterrupt",
+            "return-code": 1
+        },
+        "user-code": {
+            "output": "",
+            "return-code": 0
+        }
+    },
+    "judger-output": [
+        {
+            "display-output": false,
+            "execution-status": {
+                "input": {
+                    "memory": 0,
+                    "return-code": 0,
+                    "stderr": "",
+                    "stdout": "",
+                    "time": 0
+                },
+                "output": {
+                    "memory": 0,
+                    "return-code": 0,
+                    "stderr": "",
+                    "stdout": "",
+                    "time": 0
+                },
+                "user-code": {
+                    "memory": 0,
+                    "return-code": 0,
+                    "stderr": "",
+                    "stdout": "",
+                    "time": 0.0
+                }
+            },
+            "hash": "dabc6798ad0687fc7edca2c30fb43ec9a047a201e2d4cef21d367351242b249e",
+            "judge-id": 0,
+            "judge-result": "AC",
+            "judge-result-str": "Accepted"
+        },
+    ],
+    "pyjudge-version": "20161005-dev"
+}
+```
+
+Specific code could be viewed inside the codes.
+
+## HTML Visualization
+
+Currently, this could be done in only two ways, and is not encouraged. Only
+when you are lack of time and resources you are suggested to do it this way.
+The following shell script could help you visualize a JSON output in no time.
+
+```sh
+pyjudge -v results.json
+```
+
+And this would output a `results.html` at the current working directory.
+Nevertheless, it would also open the page for you in the browser. Screenshot
+as follows:
+
+![Visualization]('./docs/html_visualization.png')
+
+## Command Line Interface
+
+Use `-h` junction could invoke this:
+
+```
+Usage: pyjudge [OPTIONS]
+
+Options:
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -i INPUT, --input=INPUT
+                        Standard input to code
+  --input-type=INPUT_TYPE
+                        Force type of the standard input (Python/File...)
+  -o OUTPUT, --output=OUTPUT
+                        Standard output to be compared
+  --output-type=OUTPUT_TYPE
+                        Force type of the standard output (C++/Python/File...)
+  -c CODE, --code=CODE  File of the user's code
+  --code-type=CODE_TYPE
+                        Type of the user's code (C/C++/Python...)
+  -x COUNT, --count=COUNT
+                        Iterations of judging
+  -t TIME_LIMIT, --time-limit=TIME_LIMIT
+                        Time limit of execution
+  -m MEMORY_LIMIT, --memory-limit=MEMORY_LIMIT
+                        Memory limit of execution
+  -s SEED, --seed=SEED  Force random seed
+  -j JSON_OUTPUT_FILE, --json-output=JSON_OUTPUT_FILE
+                        Output location of exact results in JSON
+  --json-no-io          Do not export Input/Output data in JSON
+  -v JSON_FILE, --visualize=JSON_FILE
+                        Visualize JSON output in HTML
+```
