@@ -3,6 +3,22 @@ import subprocess
 import threading
 import time
 
+class ProcessResult:
+    """ Result of process execution. """
+    def __init__(self,
+            time=0,
+            memory=0,
+            return_code=1,
+            stdout='',
+            stderr=''):
+        self.time = time
+        self.memory = memory
+        self.return_code = return_code
+        self.stdout = stdout
+        self.stderr = stderr
+        return
+    pass
+
 class Process:
     """ One-off process execution, when invoked with the following arguments,
     it returns the execution results in corresponding relevances.
@@ -73,12 +89,12 @@ class Process:
         stdout = proc.stdout.read()
         stderr = proc.stderr.read()
         # Setting final results
-        final_results = {
-            'time': time_delta,
-            'memory': 0,
-            'return_code': ret_code,
-            'stdout': stdout,
-            'stderr': stderr,
-        }
+        final_results = ProcessResult(
+            time = time_delta,
+            memory = 0,
+            return_code = ret_code,
+            stdout = stdout.decode('utf-8', 'ignore'),
+            stderr = stderr.decode('utf-8', 'ignore'),
+        )
         return final_results
     pass
