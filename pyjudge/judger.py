@@ -1,5 +1,8 @@
 
+import binascii
 import copy
+import hashlib
+import random
 
 from . import compiler
 from . import config
@@ -72,6 +75,31 @@ class JudgerResult:
             stdout_compile_result = copy.deepcopy(stdout_compile_result or self.stdout_compile_result),
             stdout_execute_result = copy.deepcopy(stdout_execute_result or self.stdout_execute_result))
         pass
+    def hash(self):
+        str_concat = ('random:%f | judge:%s | input:%d-%s-%f-%d-%s-%s | stdout:%d-%s-%f-%d-%s-%s | out:%d-%s-%f-%d-%s-%s' % (
+            random.random(),
+            self.judge_result,
+            self.input_compile_result.return_code,
+            self.input_compile_result.output,
+            self.input_execute_result.time,
+            self.input_execute_result.memory,
+            self.input_execute_result.stdout,
+            self.input_execute_result.stderr,
+            self.stdout_compile_result.return_code,
+            self.stdout_compile_result.output,
+            self.stdout_execute_result.time,
+            self.stdout_execute_result.memory,
+            self.stdout_execute_result.stdout,
+            self.stdout_execute_result.stderr,
+            self.out_compile_result.return_code,
+            self.out_compile_result.output,
+            self.out_execute_result.time,
+            self.out_execute_result.memory,
+            self.out_execute_result.stdout,
+            self.out_execute_result.stderr,
+        )).encode('utf-8', 'ignore')
+        str_hash = binascii.hexlify(hashlib.sha256(str_concat).digest()).decode('utf-8')
+        return str_hash
     pass
 
 status_codes = {
