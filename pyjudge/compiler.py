@@ -37,7 +37,7 @@ def wrap_compiler(input_class):
             ret = input_class.compile(self, *args, **kwargs)
             if ret.return_code == 0:
                 self.__sequence = 1
-            ret['output'] = ret['output'].replace('\r', '')
+            ret.output = ret.output.replace('\r', '')
             return ret
         def execute(self, *args, **kwargs):
             if self.__sequence != 1:
@@ -49,8 +49,8 @@ def wrap_compiler(input_class):
                     dat = dat.decode('utf-8', 'ignore')
                 dat = dat.replace('\r', '')
                 return dat
-            ret['stdout'] = __create_clean_str(ret['stdout'])
-            ret['stderr'] = __create_clean_str(ret['stderr'])
+            ret.stdout = __create_clean_str(ret.stdout)
+            ret.stderr = __create_clean_str(ret.stderr)
             return ret
         def close(self):
             if self.__sequence != 1:
