@@ -13,6 +13,16 @@ class CompilerError(Exception):
         return
     pass
 
+class CompilerResult:
+    """ Compiler output, wrapped. """
+    def __init__(self,
+            return_code=1,
+            output=''):
+        self.return_code = return_code
+        self.output = output
+        return
+    pass
+
 def wrap_compiler(input_class):
     class CompilerWrapper(input_class):
         def __init__(self, *args, **kwargs):
@@ -25,7 +35,7 @@ def wrap_compiler(input_class):
             if self.__sequence == 1:
                 input_class.close(self)
             ret = input_class.compile(self, *args, **kwargs)
-            if ret['return_code'] == 0:
+            if ret.return_code == 0:
                 self.__sequence = 1
             ret['output'] = ret['output'].replace('\r', '')
             return ret
@@ -64,7 +74,7 @@ class Compiler:
         """ compile() -- Compile the source code into executable. """
         raise NotImplementedError()
 
-    def execute(self, **kwargs):
+    def execute(self, additional_args=[], **kwargs):
         """ execute() -- Execute compiled executable. """
         raise NotImplementedError()
 
@@ -83,20 +93,20 @@ class FileHandleCompiler(Compiler):
             self.__file_handle = open(self.source_path, 'r')
         except Exception:
             raise CompilerError('Unable to open file')
-        ret_result = {
-            'return_code': 0,
-            'output': ''
-        }
+        ret_result = CompilerResult(
+            return_code = 0,
+            output = '',
+        )
         return ret_result
 
-    def execute(self, **kwargs):
-        ret_result = {
-            'time': 0,
-            'memory': 0,
-            'return_code': 0,
-            'stdout': self.__file_handle.read(),
-            'stderr': '',
-        }
+    def execute(self, additional_args=[], **kwargs):
+        ret_result = process.ProcessResult(
+            time = 0,
+            memory = 0,
+            return_code = 0,
+            stdout = self.__file_handle.read(),
+            stderr = '',
+        )
         self.__file_handle.seek(0)
         return ret_result
 
@@ -127,19 +137,19 @@ class PythonCompiler(Compiler):
             raise CompilerError('Unable to open file')
         if override_command:
             self.__python_args = override_command
-        ret_result = {
-            'return_code': 0,
-            'output': ''
-        }
+        ret_result = CompilerResult(
+            return_code = 0,
+            output = '',
+        )
         return ret_result
 
-    def execute(self, **kwargs):
+    def execute(self, additional_args=[], **kwargs):
         args = copy.deepcopy(self.__python_args)
         for i in range(0, len(args)):
             args[i] = args[i].format(source_file=self.source_path)
         # Formatted arguments, executing
         p = process.Process(
-            process_args=args,
+            process_args = args + additional_args,
             **kwargs
         )
         return p.execute()
@@ -183,31 +193,33 @@ class CLikeCompiler(Compiler):
         self.__c_executable = out_file
         for i in range(0, len(args)):
             args[i] = args[i].format(
-                source_file=self.source_path,
-                output_file=out_file)
+                source_file = self.source_path,
+                output_file = out_file)
             pass
         # Formatted arguments, executing
         proc = process.Process(
-            time_limit=0,
-            memory_limit=0,
-            process_args=args
+            time_limit = 0,
+            memory_limit = 0,
+            process_args = args
         )
         ret_result_old = proc.execute()
-        ret_result = {
-            'return_code': ret_result_old['return_code'],
-            'output': ret_result_old['stderr'].decode('utf-8', 'ignore'),
-        }
+        ret_result = CompilerResult(
+            return_code = ret_result_old.return_code,
+            output = ret_result_old.stderr,
+        )
         # Some hotfixes on Windows...
         try:
             os.rename(out_file + '.exe', out_file)
         except:
             pass
         # Done compilation
+        if ret_result.return_code != 0:
+            raise CompilerError(ret_result.output)
         return ret_result
 
-    def execute(self, **kwargs):
+    def execute(self, additional_args=[], **kwargs):
         proc = process.Process(
-            process_args=[self.__c_executable],
+            process_args = [self.__c_executable] + additional_args,
             **kwargs
         )
         ret_result = proc.execute()
@@ -243,15 +255,15 @@ class ExecutableCompiler(Compiler):
             f_handle.close()
         except:
             raise CompilerError('Unable to open file')
-        ret_result = {
-            'return_code': 0,
-            'output': '',
-        }
+        ret_result = CompilerResult(
+            return_code = 0,
+            output = '',
+        )
         return ret_result
 
-    def execute(self, **kwargs):
+    def execute(self, additional_args=[], **kwargs):
         proc = process.Process(
-            process_args=[self.source_path],
+            process_args = [self.source_path] + additional_args,
             **kwargs
         )
         ret_result = proc.execute()
