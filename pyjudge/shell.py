@@ -1,4 +1,5 @@
 
+import json
 import optparse
 
 from . import compiler
@@ -39,9 +40,16 @@ opts.add_option('-m', '--memory-limit',
 opts.add_option('-s', '--seed',
         dest='seed', type='int', default=0,
         help='Force random seed')
-opts.add_option('-v', '--visualize',
-        dest='visualization', type='string', default='cli',
-        help='Type of visualization (cli, json)')
+opts.add_option('-j', '--json-output',
+        dest='json_output_file', type='string', default='./results.json',
+        help='Output location of exact results in JSON')
+opts.add_option('--json-export-io',
+        dest='json_export_io', action='store_true', default=False,
+        help='Export Input/Output data in JSON')
+
+# opts.add_option('-v', '--visualize',
+#         dest='visualization', type='string', default='cli',
+#         help='Visualize JSON output in HTML')
 
 commands, args = opts.parse_args()
 
@@ -119,4 +127,68 @@ def main():
         tab_inp.append((i + 1, judger.status_codes[res.judge_result]))
     tab = table.Table(title='Aggregative results', data=tab_inp)
     print(tab)
+
+    print('--> Writing results statistics to JSON...')
+    json_output = {
+        'pyjudge-version': __version,
+        'compiler-output': {
+            'input': {
+                'return-code': all_results[0].input_compile_result.return_code,
+                'output': all_results[0].input_compile_result.output,
+            },
+            'output': {
+                'return-code': all_results[0].stdout_compile_result.return_code,
+                'output': all_results[0].stdout_compile_result.output,
+            },
+            'user-code': {
+                'return-code': all_results[0].out_compile_result.return_code,
+                'output': all_results[0].out_compile_result.output,
+            },
+        },
+        'judger-output': [],
+    }
+    for result_id in range(0, len(all_results)):
+        results = all_results[result_id]
+        json_output['judger-output'].append({
+            'judge-id': result_id,
+            'hash': results.hash(),
+            'execution-status': {
+                'input': {
+                    'return-code': results.input_execute_result.return_code,
+                    'time': results.input_execute_result.time,
+                    'memory': results.input_execute_result.memory,
+                    'stdout': results.input_execute_result.stdout if commands.json_export_io else '',
+                    'stderr': results.input_execute_result.stderr if commands.json_export_io else '',
+                },
+                'output': {
+                    'return-code': results.stdout_execute_result.return_code,
+                    'time': results.stdout_execute_result.time,
+                    'memory': results.stdout_execute_result.memory,
+                    'stdout': results.stdout_execute_result.stdout if commands.json_export_io else '',
+                    'stderr': results.stdout_execute_result.stderr if commands.json_export_io else '',
+                },
+                'user-code': {
+                    'return-code': results.out_execute_result.return_code,
+                    'time': results.out_execute_result.time,
+                    'memory': results.out_execute_result.memory,
+                    'stdout': results.out_execute_result.stdout if commands.json_export_io else '',
+                    'stderr': results.out_execute_result.stderr if commands.json_export_io else '',
+                },
+            },
+        })
+    json_stringify = json.dumps(
+        json_output,
+        indent = 4,
+        sort_keys = True)
+    try:
+        if not commands.json_output_file:
+            raise
+        json_handle = open(commands.json_output_file, 'w', encoding='utf-8')
+        json_handle.write(json_stringify)
+        json_handle.flush()
+        json_handle.close()
+    except:
+        print('!!! Unable to write to JSON file.')
+    else:
+        print('... Succeeded.')
     return
