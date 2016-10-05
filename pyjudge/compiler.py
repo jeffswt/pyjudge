@@ -130,6 +130,54 @@ class FileHandleCompiler(Compiler):
     pass
 
 @wrap_compiler
+class DirectoryFilesCompiler(Compiler):
+    """ Wraps files in directory for matching files. """
+
+    def compile(self, override_command=None):
+        pattern_1 = r'\.([^.]*?)\*$'
+        pattern_2 = r'{number}.\1'
+        f_handles = []
+        for i in range(1, 101): # Maximum allowed 100 inputs
+            fn = re.sub(pattern_1, pattern_2.format(number=i), self.source_path)
+            n_comp = FileHandleCompiler(fn)
+            try:
+                n_comp.compile()
+            except CompilerError:
+                if not n_comp.closed():
+                    n_comp.close()
+                break
+            f_handles.append((i, fn, n_comp))
+        self.__file_handle = f_handles
+        self.__file_pointer = 0
+        if len(self.__file_handle) <= 0:
+            raise CompilerError('Unable to find any corresponding file')
+        return CompilerResult(return_code=0, output='')
+
+    def execute(self, additional_args=[], **kwargs):
+        try:
+            f_handle = self.__file_handle[self.__file_pointer][2]
+            ret = f_handle.execute(additional_args, **kwargs)
+        except Exception as err:
+            raise err
+        finally:
+            self.__file_pointer += 1
+            if self.__file_pointer >= len(self.__file_handle):
+                self.__file_pointer = 0
+            pass
+        return ret
+
+    def close(self):
+        for tup in self.__file_handle:
+            f_handle = tup[2]
+            if not f_handle.closed():
+                f_handle.close()
+            continue
+        del self.__file_handle
+        del self.__file_pointer
+        return
+    pass
+
+@wrap_compiler
 class PythonCompiler(Compiler):
     """ Python compiler, a wrapper for Python 2 code execution. """
 
@@ -298,6 +346,7 @@ class AdaptiveCompiler(Compiler):
                 r'.txt$': 'Text',
                 r'.in$': 'Text', # De-facto standards by CCF
                 r'.out$': 'Text', # De-facto standards by CCF
+                r'.(in|out)\*$': 'Directory', # De-facto standards by CCF and pyJudge
                 r'.cpp$': 'C++',
                 r'.c\+\+$': 'C++',
                 r'.c$': 'C',
@@ -320,6 +369,7 @@ class AdaptiveCompiler(Compiler):
         # Determined source_path, now creating new compilers for use...
         comp_match = {
             'Text': FileHandleCompiler,
+            'Directory': DirectoryFilesCompiler,
             'C++': CppCompiler,
             'C': CCompiler,
             'Python3': Python3Compiler,
