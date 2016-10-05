@@ -34,6 +34,7 @@ class JudgerResult:
         table_list = [
             ('Judge Result', status_codes[self.judge_result]),
             ('Execution Time', self.out_execute_result.time),
+            ('Std Run Time', self.stdout_execute_result.time),
             ('Memory Cost', self.out_execute_result.memory),
             ('Return Code', self.out_execute_result.return_code),
             ('Compile Output', self.out_compile_result.output),
@@ -85,6 +86,28 @@ status_codes = {
     'IJI': 'Invalid Judger Input',
 }
 
+def wrap_judger(input_class):
+    class JudgerWrapper(input_class):
+        def __init__(self, *args, **kwargs):
+            self.__sequence = 0
+            ret = input_class.__init__(self, *args, **kwargs)
+            self.__sequence = 1
+            return ret
+        def judge(self, *args, **kwargs):
+            if self.__sequence != 1:
+                raise AttributeError('Judger had already been closed')
+            ret = input_class.judge(self, *args, **kwargs)
+            return ret
+        def close(self, *args, **kwargs):
+            if self.__sequence == 0:
+                raise AttributeError('Judger had already been closed')
+            ret = input_class.close(self, *args, **kwargs)
+            self.__sequence = 0
+            return ret
+        pass
+    return JudgerWrapper
+
+@wrap_judger
 class Judger:
     """ Base judger, always returns NotImplementedError on all actions. Extend
     this class for further functionalities.
@@ -98,8 +121,12 @@ class Judger:
 
     def judge(self, *args, **kwargs):
         raise NotImplementedError()
+
+    def close(self):
+        raise NotImplementedError()
     pass
 
+@wrap_judger
 class DataComparisonJudger(Judger):
     """ Compares data between files, will raise presentation error if found
     correct answer yet incorrect formatting. Receives following arguments at
@@ -235,7 +262,7 @@ class DataComparisonJudger(Judger):
         except:
             pass
         try:
-            self.output_handle.close()
+            self.stdout_handle.close()
         except:
             pass
         return
