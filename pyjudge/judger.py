@@ -85,8 +85,24 @@ class DataComparisonJudger(Judger):
 
     Used to judge I/O from local files. """
 
+    def __init__(self,
+            input_handle = None,
+            out_handle = None,
+            stdout_handle = None,
+            seed = None):
+        if not input_handle:
+            raise AttributeError('Must provide input handle')
+        if not out_handle:
+            raise AttributeError('Must provide output handle')
+        if not stdout_handle:
+            raise AttributeError('Must provide standard output handle')
+        self.input_handle = input_handle
+        self.out_handle = out_handle
+        self.stdout_handle = stdout_handle
+        self.seed = seed
+        return
 
-    def judge(self, out_str, stdout_str, time_limit=0, memory_limit=0):
+    def judge(self, time_limit=0, memory_limit=0):
         def __strip_down(s_in, flag):
             lout = list()
             for i in s_in:
