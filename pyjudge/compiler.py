@@ -143,14 +143,14 @@ class DirectoryFilesCompiler(Compiler):
         pattern_2 = r'{number}.\1'
         f_handles = []
         for i in range(1, 101): # Maximum allowed 100 inputs
-            def __test_available(src, *args):
+            def __test_available(src, i, *args):
                 for j in args:
-                    fn = re.sub(pattern_1, pattern_2.format(number=j), src)
+                    fn = re.sub(pattern_1, pattern_2.format(number=j % i), src)
                     if os.path.exists(fn):
                         return fn
                     continue
                 return None
-            fn = __test_available(self.source_path, '%d' % i, '0%d' % i, '00%d' % i)
+            fn = __test_available(self.source_path, i, '%d', '0%d', ' %d', ' 0%d', '(%d)', '(0%d)', ' (%d)', ' (0%d)')
             if not fn:
                 break
             n_comp = FileHandleCompiler(fn)
