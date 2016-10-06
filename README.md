@@ -221,7 +221,7 @@ And this would output a `results.html` at the current working directory.
 Nevertheless, it would also open the page for you in the browser. Screenshot
 as follows:
 
-![Visualization]('./docs/html_visualization.png')
+![Visualization](./docs/html_visualization.png)
 
 ## Command Line Interface
 
