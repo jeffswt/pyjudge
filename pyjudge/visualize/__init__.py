@@ -11,10 +11,9 @@ def create(json_data):
         data = data.decode('utf-8', 'ignore')
     data = mako.template.Template(
         text = data,
-        input_encoding = 'utf-8',
-        output_encoding = 'utf-8').render(
+        input_encoding = 'utf-8').render(
             json_data = json_data
-        ).decode('utf-8')
+        )
     return data
 
 def export_py_html():
