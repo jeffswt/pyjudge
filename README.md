@@ -14,14 +14,22 @@ Judges or Offline Judges with this module.
 
 ## Installation
 
-Copy the `pyjudge` folder to `%PYTHON3_PATH%/Lib/site-packages`.
+Clone the repository into an empty folder, and execute the following command:
 
-Copy the content inside `Scripts` folder to `%PYTHON3_PATH%/Scripts`, if you are
-a Windows user. Otherwise think of a way to invoke `pyjudge.shell.main()` with
-a bash script or cmdlet.
+```sh
+pip install setuptools # If you have already installed this before, ignore it
+python setup.py install # Install pyjudge
+```
 
-We haven't generated a Python wheel by now, so only manual installation is
-possible until now.
+Alternatively you could download our official release from the releases panel,
+and install the compiled 'wheel' to your computer. After you have downloaded
+the release, you may install it in the command line:
+
+```sh
+pip install ./pyjudge-version-py3-none-any.whl # Referring to the downloaded file
+```
+
+Installation is as fast as judging your programs!
 
 ## Configuring
 
