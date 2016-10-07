@@ -78,7 +78,7 @@ class Process:
         except BrokenPipeError:
             pass
         # Setting time limit
-        thread_kill = [False,]
+        thread_kill = [False, None]
         if self.time_limit > 0:
             def time_delimiter(time_begin, time_limit, proc, thread_kill):
                 while True:
@@ -86,6 +86,7 @@ class Process:
                     time.sleep(0.015)
                     # This might delay a few seconds...
                     if time_cur - time_begin >= time_limit:
+                        thread_kill[1] = 'TLE'
                         proc.kill()
                         break
                     # Force termination
@@ -117,6 +118,11 @@ class Process:
         # Retrieving process execution time
         time_final = time.time()
         time_delta = time_final - time_begin
+        # Exceptions on runtime...
+        if thread_kill[1] == 'TLE':
+            time_delta = self.time_limit
+        # if thread_kill[1] == 'MLE':
+        #     pass
         # Retrieving process results (BINARY!)
         # Setting final results
         final_results = ProcessResult(

@@ -7,7 +7,7 @@ from . import judger
 from . import table
 from . import visualize
 
-__version = '20161005-dev'
+__version = '20161006-dev'
 
 opts = optparse.OptionParser(usage='pyjudge [OPTIONS]', version=__version)
 

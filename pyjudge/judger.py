@@ -244,7 +244,7 @@ class DataComparisonJudger(Judger):
         self.j_result.stdout_execute_result = self.stdout_handle.execute(
             time_limit = time_limit,
             memory_limit = memory_limit,
-            stdin = self.j_result.input_execute_result.stdout
+            stdin = self.j_result.input_execute_result.stdout + '\n'
         )
         if self.j_result.stdout_execute_result.return_code != 0:
             return self.j_result.clone(judge_result='IJI')
@@ -252,13 +252,13 @@ class DataComparisonJudger(Judger):
         self.j_result.out_execute_result = self.out_handle.execute(
             time_limit = time_limit,
             memory_limit = memory_limit,
-            stdin = self.j_result.input_execute_result.stdout
+            stdin = self.j_result.input_execute_result.stdout + '\n'
         )
         # Pretended delimitations
         expected_out = self.j_result.out_execute_result
-        if expected_out.time >= time_limit > 0:
+        if expected_out.time == time_limit > 0:
             return self.j_result.clone(judge_result='TLE')
-        if expected_out.memory >= memory_limit > 0:
+        if expected_out.memory == memory_limit > 0:
             return self.j_result.clone(judge_result='MLE')
         if len(expected_out.stdout) >= config.get_config('max_output'):
             return self.j_result.clone(judge_result='OLE')

@@ -24,7 +24,10 @@ def remove_tmpfile(fil):
     fn = os.path.basename(fil)
     pth = os.path.join(tmp_dir, fn)
     if os.path.exists(pth):
-        os.remove(pth)
+        try:
+            os.remove(pth)
+        except:
+            pass
     if fn in __tmp_files:
         __tmp_files.remove(fn)
     return

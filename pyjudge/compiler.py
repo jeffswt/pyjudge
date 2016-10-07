@@ -150,7 +150,7 @@ class DirectoryFilesCompiler(Compiler):
                         return fn
                     continue
                 return None
-            fn = __test_available(self.source_path, i, '%d', '0%d', ' %d', ' 0%d', '(%d)', '(0%d)', ' (%d)', ' (0%d)')
+            fn = __test_available(self.source_path, i, '%d', '0%d', ' %d', ' 0%d', '(%d)', '(0%d)', ' (%d)', ' (0%d)', '.%d', '.0%d')
             if not fn:
                 break
             n_comp = FileHandleCompiler(fn)
