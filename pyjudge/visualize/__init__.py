@@ -15,20 +15,3 @@ def create(json_data):
             json_data = json_data
         )
     return data
-
-def export_py_html():
-    data = vis_html_data.html_template_data
-    f_handle = open('template.html', 'w', encoding='utf-8')
-    f_handle.write(data)
-    f_handle.close()
-    return
-
-def import_py_html():
-    f_handle = open('template.html', 'r', encoding='utf-8')
-    data = f_handle.read()
-    f_handle.close()
-    data = "html_template_data = %s\n" % "\\\n  + ".join(repr(i + '\n') for i in data.split('\n'))
-    f_handle = open('vis_html_data.py', 'w', encoding='utf-8')
-    f_handle.write(data)
-    f_handle.close()
-    return
