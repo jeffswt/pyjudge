@@ -15,7 +15,7 @@ Others would be implemented by this module.
 """
 
 __configs = {
-    # 'tmp_dir': 'C:/Users/Administrator/AppData/Temp/PyJudge/',
+    # 'tmp_dir': 'C:/Users/Administrator/AppData/Local/Temp/PyJudgeTemp/',
     'tmp_dir': './PyJudgeTemp/',
     'max_output': 64*1024*1024, # 64 MB Maximum allowed output
     'table_max_lines': 20,

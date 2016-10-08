@@ -70,13 +70,6 @@ class Process:
             stderr=subprocess.PIPE)
         # Marking begin timestamp
         time_begin = time.time()
-        # Writing input to process
-        try:
-            if len(self.stdin) > 0:
-                proc.stdin.write(self.stdin)
-                proc.stdin.flush()
-        except BrokenPipeError:
-            pass
         # Setting time limit
         thread_kill = [False, None]
         if self.time_limit > 0:
@@ -98,19 +91,10 @@ class Process:
                 target=time_delimiter,
                 args=(time_begin, self.time_limit, proc, thread_kill)
             ).start()
-        # Waiting for process to terminate
-        # stdout = b''
-        # stderr = b''
-        # while proc.poll() == None:
-        #     stdout += proc.stdout.read()
-        #     stderr += proc.stderr.read()
-        #     proc.stdout.flush()
-        #     proc.stderr.flush()
-        #     time.sleep(0.015)
+        # Inputting and waiting for process to terminate
         try:
-            stdout = proc.stdout.read()
-            stderr = proc.stderr.read()
-        except BrokenPipeError:
+            stdout, stderr = proc.communicate(input=self.stdin)
+        except Exception:
             stdout = b''
             stderr = b''
         ret_code = proc.wait()
