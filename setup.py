@@ -7,7 +7,7 @@ def readme():
 
 setup(
     name = 'pyjudge',
-    version = '0.1.74',
+    version = '0.1.75',
     description = 'OI programs Judger in Python',
     long_description = 'Judge OI programs easily with pyJudge.',
     classifiers = [

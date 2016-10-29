@@ -21,6 +21,14 @@ pip install setuptools # If you have already installed this before, ignore it
 python setup.py install # Install pyjudge
 ```
 
+You can also build your Wheel package by executing the following command:
+
+```sh
+pip install setuptools # If you have already installed this before, ignore it
+pip install wheel # Install bdist_wheel provider
+python setup.py build bdist_wheel # Build .whl package
+```
+
 Alternatively you could download our official release from the releases panel,
 and install the compiled 'wheel' to your computer. After you have downloaded
 the release, you may install it in the command line:

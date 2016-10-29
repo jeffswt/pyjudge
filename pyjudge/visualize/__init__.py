@@ -78,6 +78,38 @@ html_template_data_main = r"""
                     </div></div>
                     % if test['display-output']:
                     <div class="row">
+<%
+s_stdout = test['execution-status']['output']['stdout']
+s_userout = test['execution-status']['user-code']['stdout']
+s_stdin = test['execution-status']['input']['stdout']
+l_sout = s_stdout.split('\n')
+l_uout = s_userout.split('\n')
+l_sin = s_stdin.split('\n')
+n_out = []
+n_sout = []
+n_sin = []
+def make_line_count(i, ps_arr=None):
+    maxlen = len(str(max(len(l_sout), len(l_uout))))
+    if ps_arr:
+        maxlen = len(str(len(ps_arr)))
+    s = str(i).rjust(maxlen, ' ')
+    return s
+for i in range(0, len(l_uout)):
+    if i >= len(l_sout):
+        n_out.append(make_line_count(i) + ' | ' + l_uout[i])
+        continue
+    n_sout.append(make_line_count(i) + ' | ' + l_sout[i])
+    if l_uout[i] == l_sout[i]:
+        n_out.append(make_line_count(i) + ' | ' + l_uout[i])
+    else:
+        n_out.append(make_line_count(i) + '###' + l_uout[i])
+    pass
+for i in range(0, len(l_sin)):
+    n_sin.append(make_line_count(i, ps_arr=l_sin) + ' | ' + l_sin[i])
+test['execution-status']['input']['stdout'] = '\n'.join(n_sin)
+test['execution-status']['user-code']['stdout'] = '\n'.join(n_out)
+test['execution-status']['output']['stdout'] = '\n'.join(n_sout)
+%>
                         <div class="col-sm-4">
                             <h4><b>Input</b></h4>
                             <textarea style="font-family: Consolas; resize: none; width: 100%; height: 1000px;">${test['execution-status']['input']['stdout']}</textarea>
