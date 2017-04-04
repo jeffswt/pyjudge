@@ -182,6 +182,7 @@ class DataComparisonJudger(Judger):
             raise AttributeError('Must provide output handle')
         if not stdout_handle:
             raise AttributeError('Must provide standard output handle')
+        # Building compilers, in case they haven't been built
         if type(input_handle) == str:
             input_handle = compiler.AdaptiveCompiler(input_handle)
             self.input_handle_is_temp = True

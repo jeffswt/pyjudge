@@ -1,9 +1,20 @@
 
 import subprocess
+import sys
 import threading
 import time
 
 from . import table
+
+# http://stackoverflow.com/questions/24130623/using-python-subprocess-popen-cant-prevent-exe-stopped-working-prompt
+if sys.platform.startswith('win'):
+    import ctypes
+    SEM_NOGPFAULTERRORBOX = 0x0002; # From MSDN
+    ctypes.windll.kernel32.SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    CREATE_NO_WINDOW = 0x08000000; # From Windows API
+    platform_subprocess_flags = CREATE_NO_WINDOW
+else:
+    platform_subprocess_flags = 0
 
 class ProcessResult:
     """ Result of process execution. """
@@ -65,6 +76,7 @@ class Process:
     def execute(self):
         # Starting process
         proc = subprocess.Popen(self.process_args,
+            creationflags=platform_subprocess_flags,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)

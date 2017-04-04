@@ -368,7 +368,9 @@ class AdaptiveCompiler(Compiler):
                 r'.txt$': 'Text',
                 r'.in$': 'Text', # De-facto standards by CCF
                 r'.out$': 'Text', # De-facto standards by CCF
-                r'.(in|out)\*$': 'Directory', # De-facto standards by CCF and pyJudge
+                r'.ans$': 'Text', # De-facto standards by CCF
+                r'.std$': 'Text', # Non-standard
+                r'.(in|out|ans|std)\*$': 'Directory', # De-facto standards by CCF and pyJudge
                 r'.cpp$': 'C++',
                 r'.c\+\+$': 'C++',
                 r'.c$': 'C',

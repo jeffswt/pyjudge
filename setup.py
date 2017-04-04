@@ -7,7 +7,7 @@ def readme():
 
 setup(
     name = 'pyjudge',
-    version = '0.1.75',
+    version = '0.1.78',
     description = 'OI programs Judger in Python',
     long_description = 'Judge OI programs easily with pyJudge.',
     classifiers = [
@@ -21,8 +21,8 @@ setup(
         'Topic :: Education :: Testing',
     ],
     keywords = 'judge judger oi',
-    url = 'https://github.com/ht35268/pyjudge',
-    author = 'ht35268',
+    url = 'https://github.com/jeffswt/pyjudge',
+    author = 'jeffswt',
     author_email = '',
     license = 'GPLv3',
     packages = [
