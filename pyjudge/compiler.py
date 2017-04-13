@@ -251,7 +251,9 @@ class Python3Compiler(PythonCompiler):
 @wrap_compiler
 class CLikeCompiler(Compiler):
     """ C / C++ / C-Style compiler, invokes GCC or G++, used this as an
-    abbreviation for fewer code lines. """
+    abbreviation for fewer code lines.
+    This can also be used for languages that are compiled to machine code which
+    can be executed directly. """
 
     def __init__(self, source_path, language_type):
         Compiler.__init__(self, source_path)
@@ -259,6 +261,8 @@ class CLikeCompiler(Compiler):
             self.__c_args = config.get_config('gcc_args')
         elif language_type == 'C++':
             self.__c_args = config.get_config('g++_args')
+        elif language_type == 'Pascal':
+            self.__c_args = config.get_config('fpc_args')
         else:
             raise AttributeError('Unknown C/Style language type')
         return
@@ -350,7 +354,10 @@ class ExecutableCompiler(Compiler):
     pass
 
 @wrap_compiler
-class PascalCompiler(Compiler):
+class PascalCompiler(CLikeCompiler):
+    """ Pascal Compiler, wraps CLikeCompiler. """
+    def __init__(self, source_path):
+        return CLikeCompiler.__init__(self, source_path, 'Pascal')
     pass
 
 @wrap_compiler
@@ -377,6 +384,7 @@ class AdaptiveCompiler(Compiler):
                 r'.py$': 'Python3',
                 r'.py3$': 'Python3', # Non-standard
                 r'.py2$': 'Python2', # Non-standard
+                r'.pas$': 'Pascal',
                 r'.java$': 'Java',
                 r'.exe$': 'Executable', # Windows executable
                 r'^[~.]$': 'Executable', # We treat them as executable

@@ -20,12 +20,12 @@ __configs = {
     'max_output': 64*1024*1024, # 64 MB Maximum allowed output
     'table_max_lines': 20,
     'table_max_linewidth': 256,
-    'gcc_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/gcc.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
-    'g++_args': ['C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
-    'fpc_args': None,
-    'python2_args': ['C:/Programs/Python2/python2.exe', '{source_file}'],
-    'python3_args': ['C:/Programs/Python3/python3.exe', '{source_file}'],
-    'javac_args': None,
+    'gcc_args': ['gcc', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
+    'g++_args': ['g++', '-O0', '-g0', '-Wall', '-o', '{output_file}', '{source_file}'],
+    'fpc_args': ['fpc', '{source_file}', '-o{output_file}'],
+    'python2_args': ['python2', '{source_file}'],
+    'python3_args': ['python3', '{source_file}'],
+    'javac_args': ['javac'],
 }
 
 def get_config(idx):
