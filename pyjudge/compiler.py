@@ -1,4 +1,3 @@
-
 import copy
 import os
 import re
@@ -8,26 +7,31 @@ from . import process
 from . import table
 from . import tmpmgmt
 
+
 class CompilerError(Exception):
     def __init__(self, *args):
         self.args = args
         return
     pass
 
+
 class CompilerResult:
     """ Compiler output, wrapped. """
+
     def __init__(self,
-            return_code=1,
-            output=''):
+                 return_code=1,
+                 output=''):
         self.return_code = return_code
         self.output = output
         return
+
     def __repr__(self):
         return repr(table.Table('Process Execution Results', [
             ('Return Code', self.return_code),
             ('Compiler Output', self.output),
         ]))
     pass
+
 
 def wrap_compiler(input_class):
     class CompilerWrapper(input_class):
@@ -36,6 +40,7 @@ def wrap_compiler(input_class):
             self.__sequence = 0
             self.__compile_result = None
             return ret
+
         def compile(self, *args, **kwargs):
             if self.__compile_result != None:
                 if self.__compile_result.return_code != 0:
@@ -50,16 +55,20 @@ def wrap_compiler(input_class):
                 self.__sequence = 1
             except CompilerError as err:
                 out = err.args[0].replace('\r', '')
-                self.__compile_result = CompilerResult(return_code=1, output=err.args[0])
+                self.__compile_result = CompilerResult(
+                    return_code=1, output=err.args[0])
                 raise err
             return ret
+
         def compiled(self):
             return self.__sequence == 1
+
         def execute(self, *args, **kwargs):
             if self.__sequence != 1:
                 raise AttributeError('Source code hadn\'t been compiled')
             ret = input_class.execute(self, *args, **kwargs)
             # Converting bytes to str
+
             def __create_clean_str(dat):
                 if type(dat) == bytes:
                     dat = dat.decode('utf-8', 'ignore')
@@ -68,16 +77,19 @@ def wrap_compiler(input_class):
             ret.stdout = __create_clean_str(ret.stdout)
             ret.stderr = __create_clean_str(ret.stderr)
             return ret
+
         def close(self):
             if self.__sequence != 1:
                 raise AttributeError('Nothing to remove')
             ret = input_class.close(self)
             self.__sequence = 0
             return ret
+
         def closed(self):
             return self.__sequence == 0
         pass
     return CompilerWrapper
+
 
 @wrap_compiler
 class Compiler:
@@ -102,6 +114,7 @@ class Compiler:
         raise NotImplementedError()
     pass
 
+
 @wrap_compiler
 class FileHandleCompiler(Compiler):
     """ Handles a file in Unicode encoding. Does not actually compile files,
@@ -113,18 +126,18 @@ class FileHandleCompiler(Compiler):
         except Exception:
             raise CompilerError('Unable to open file')
         ret_result = CompilerResult(
-            return_code = 0,
-            output = '',
+            return_code=0,
+            output='',
         )
         return ret_result
 
     def execute(self, additional_args=[], **kwargs):
         ret_result = process.ProcessResult(
-            time = 0,
-            memory = 0,
-            return_code = 0,
-            stdout = self.__file_handle.read(),
-            stderr = '',
+            time=0,
+            memory=0,
+            return_code=0,
+            stdout=self.__file_handle.read(),
+            stderr='',
         )
         self.__file_handle.seek(0)
         return ret_result
@@ -134,6 +147,7 @@ class FileHandleCompiler(Compiler):
         return
     pass
 
+
 @wrap_compiler
 class DirectoryFilesCompiler(Compiler):
     """ Wraps files in directory for matching files. """
@@ -142,7 +156,7 @@ class DirectoryFilesCompiler(Compiler):
         pattern_1 = r'\.([^.]*?)\*$'
         pattern_2 = r'{number}.\1'
         f_handles = []
-        for i in range(1, 101): # Maximum allowed 100 inputs
+        for i in range(1, 101):  # Maximum allowed 100 inputs
             def __test_available(src, i, *args):
                 for j in args:
                     fn = re.sub(pattern_1, pattern_2.format(number=j % i), src)
@@ -150,7 +164,8 @@ class DirectoryFilesCompiler(Compiler):
                         return fn
                     continue
                 return None
-            fn = __test_available(self.source_path, i, '%d', '0%d', ' %d', ' 0%d', '(%d)', '(0%d)', ' (%d)', ' (0%d)', '.%d', '.0%d')
+            fn = __test_available(self.source_path, i, '%d', '0%d', ' %d',
+                                  ' 0%d', '(%d)', '(0%d)', ' (%d)', ' (0%d)', '.%d', '.0%d')
             if not fn:
                 break
             n_comp = FileHandleCompiler(fn)
@@ -191,6 +206,7 @@ class DirectoryFilesCompiler(Compiler):
         return
     pass
 
+
 @wrap_compiler
 class PythonCompiler(Compiler):
     """ Python compiler, a wrapper for Python 2 code execution. """
@@ -214,8 +230,8 @@ class PythonCompiler(Compiler):
         if override_command:
             self.__python_args = override_command
         ret_result = CompilerResult(
-            return_code = 0,
-            output = '',
+            return_code=0,
+            output='',
         )
         return ret_result
 
@@ -225,7 +241,7 @@ class PythonCompiler(Compiler):
             args[i] = args[i].format(source_file=self.source_path)
         # Formatted arguments, executing
         p = process.Process(
-            process_args = args + additional_args,
+            process_args=args + additional_args,
             **kwargs
         )
         return p.execute()
@@ -234,19 +250,24 @@ class PythonCompiler(Compiler):
         return
     pass
 
+
 @wrap_compiler
 class Python2Compiler(PythonCompiler):
     """ Python 2 compiler, wraps PythonCompiler. """
+
     def __init__(self, source_path):
         return PythonCompiler.__init__(self, source_path, 2)
     pass
 
+
 @wrap_compiler
 class Python3Compiler(PythonCompiler):
     """ Python 3 compiler, wraps PythonCompiler. """
+
     def __init__(self, source_path):
         return PythonCompiler.__init__(self, source_path, 3)
     pass
+
 
 @wrap_compiler
 class CLikeCompiler(Compiler):
@@ -264,7 +285,7 @@ class CLikeCompiler(Compiler):
         elif language_type == 'Pascal':
             self.__c_args = config.get_config('fpc_args')
         else:
-            raise AttributeError('Unknown C/Style language type')
+            raise AttributeError('Unknown Compiler args')
         return
 
     def compile(self, override_command=None):
@@ -273,19 +294,19 @@ class CLikeCompiler(Compiler):
         self.__c_executable = out_file
         for i in range(0, len(args)):
             args[i] = args[i].format(
-                source_file = self.source_path,
-                output_file = out_file)
+                source_file=self.source_path,
+                output_file=out_file)
             pass
         # Formatted arguments, executing
         proc = process.Process(
-            time_limit = 0,
-            memory_limit = 0,
-            process_args = args
+            time_limit=5000,
+            memory_limit=0,
+            process_args=args
         )
         ret_result_old = proc.execute()
         ret_result = CompilerResult(
-            return_code = ret_result_old.return_code,
-            output = ret_result_old.stderr,
+            return_code=ret_result_old.return_code,
+            output=ret_result_old.stderr,
         )
         # Some hotfixes on Windows...
         try:
@@ -299,7 +320,7 @@ class CLikeCompiler(Compiler):
 
     def execute(self, additional_args=[], **kwargs):
         proc = process.Process(
-            process_args = [self.__c_executable] + additional_args,
+            process_args=[self.__c_executable] + additional_args,
             **kwargs
         )
         ret_result = proc.execute()
@@ -310,19 +331,24 @@ class CLikeCompiler(Compiler):
         return
     pass
 
+
 @wrap_compiler
 class CCompiler(CLikeCompiler):
     """ C Compiler, wraps CLikeCompiler. """
+
     def __init__(self, source_path):
         return CLikeCompiler.__init__(self, source_path, 'C')
     pass
 
+
 @wrap_compiler
 class CppCompiler(CLikeCompiler):
     """ C++ Compiler, wraps CLikeCompiler. """
+
     def __init__(self, source_path):
         return CLikeCompiler.__init__(self, source_path, 'C++')
     pass
+
 
 @wrap_compiler
 class ExecutableCompiler(Compiler):
@@ -336,14 +362,14 @@ class ExecutableCompiler(Compiler):
         except:
             raise CompilerError('Unable to open file')
         ret_result = CompilerResult(
-            return_code = 0,
-            output = '',
+            return_code=0,
+            output='',
         )
         return ret_result
 
     def execute(self, additional_args=[], **kwargs):
         proc = process.Process(
-            process_args = [self.source_path] + additional_args,
+            process_args=[self.source_path] + additional_args,
             **kwargs
         )
         ret_result = proc.execute()
@@ -353,41 +379,45 @@ class ExecutableCompiler(Compiler):
         return
     pass
 
+
 @wrap_compiler
 class PascalCompiler(CLikeCompiler):
     """ Pascal Compiler, wraps CLikeCompiler. """
+
     def __init__(self, source_path):
         return CLikeCompiler.__init__(self, source_path, 'Pascal')
     pass
+
 
 @wrap_compiler
 class JavaCompiler(Compiler):
     pass
 
+
 @wrap_compiler
 class AdaptiveCompiler(Compiler):
     """ Adaptive compiler, adapts compilation method through input or given
     method type. """
+
     def __init__(self, source_path, source_type=None):
         Compiler.__init__(self, source_path)
         if not source_type:
             src_match = {
                 r'.txt$': 'Text',
-                r'.in$': 'Text', # De-facto standards by CCF
-                r'.out$': 'Text', # De-facto standards by CCF
-                r'.ans$': 'Text', # De-facto standards by CCF
-                r'.std$': 'Text', # Non-standard
-                r'.(in|out|ans|std)\*$': 'Directory', # De-facto standards by CCF and pyJudge
+                r'.in$': 'Text',  # De-facto standards by CCF
+                r'.out$': 'Text',  # De-facto standards by CCF
+                r'.ans$': 'Text',  # De-facto standards by CCF
+                r'.(in|out|ans)\*$': 'Directory',
                 r'.cpp$': 'C++',
                 r'.c\+\+$': 'C++',
                 r'.c$': 'C',
                 r'.py$': 'Python3',
-                r'.py3$': 'Python3', # Non-standard
-                r'.py2$': 'Python2', # Non-standard
+                r'.py3$': 'Python3',  # Non-standard
+                r'.py2$': 'Python2',  # Non-standard
                 r'.pas$': 'Pascal',
                 r'.java$': 'Java',
-                r'.exe$': 'Executable', # Windows executable
-                r'^[~.]$': 'Executable', # We treat them as executable
+                r'.exe$': 'Executable',  # Windows executable
+                r'^[~.]$': 'Executable',  # We treat them as executable
             }
             for i in src_match:
                 j = src_match[i]
