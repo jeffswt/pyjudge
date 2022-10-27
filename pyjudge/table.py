@@ -95,7 +95,7 @@ class Table:
         for row in self.data:
             tmp_l = self.join_wrap_lines(str(row[0]), str(
                 row[1]), lwidth=row_widths[0], rwidth=row_widths[1], lalign='right', ralign='left')
-            out_l += self.insert_in_lines(tmp_l[:1], row_widths[0], ' T ') + \
+            out_l += self.insert_in_lines(tmp_l[:1], row_widths[0], ' - ') + \
                 self.insert_in_lines(tmp_l[1:], row_widths[0], ' | ')
         fmt_s = ''
         for line in out_l:
