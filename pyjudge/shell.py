@@ -7,7 +7,7 @@ from . import judger
 from . import table
 from . import visualize
 
-__version = '20221026-dev'
+__version = '20221027-dev'
 
 parser = argparse.ArgumentParser(
     usage='pyjudge [OPTIONS]', description='A simple judger for OI/ACM.')
@@ -21,6 +21,9 @@ parser.add_argument('--input-type',
 parser.add_argument('-o', '--output',
                     dest='output', type=str, default='',
                     help='Standard output to be compared')
+parser.add_argument('-io', '--test-cases',
+                    dest='testcases', type=str, default='',
+                    help='Folder to store Standard IO files')
 parser.add_argument('--output-type',
                     dest='output_type', type=str, default='',
                     help='Force type of the standard output (C++/Python/File...)')
@@ -30,9 +33,6 @@ parser.add_argument('-c', '--code',
 parser.add_argument('--code-type',
                     dest='code_type', type=str, default='',
                     help='Type of the user\'s code (C/C++/Python...)')
-parser.add_argument('-x', '--count',
-                    dest='count', type=int, default=1,
-                    help='Iterations of judging')
 parser.add_argument('-t', '--time-limit',
                     dest='time_limit', type=int, default=1000,
                     help='Time limit of execution (ms)')
@@ -76,9 +76,9 @@ def main():
 
     # Normal actions
     try:
-        if not commands.input:
+        if not commands.input and not commands.testcases:
             raise Exception()
-        if not commands.output:
+        if not commands.output and not commands.testcases:
             raise Exception()
         if not commands.code:
             raise Exception()
@@ -89,46 +89,72 @@ def main():
 
     # Compiling source codes
     print('--> Compiling source codes...')
-    # print('--> Compiling input source...')
-    comp_input = compiler.AdaptiveCompiler(
-        commands.input,
-        source_type=commands.input_type or None)
-    # comp_input.compile()
-    # print('... Compilation complete.')
 
-    # print('--> Compiling standard output...')
-    comp_output = compiler.AdaptiveCompiler(
-        commands.output,
-        source_type=commands.output_type or None)
-    # comp_output.compile()
-    # print('... Compilation complete.')
-
-    # print('--> Compiling user code...')
     comp_code = compiler.AdaptiveCompiler(
         commands.code,
         source_type=commands.code_type or None)
-    # comp_code.compile()
-    # print('... Compilation complete.')
+    comp_code.compile()
 
-    # Compile files with judger
-    j_worker = judger.DataComparisonJudger(
-        input_handle=comp_input,
-        out_handle=comp_code,
-        stdout_handle=comp_output,
-        seed=commands.seed)
     print('... Compilation complete.')
 
     # Judging results
     all_results = []
-    for run_count in range(0, commands.count):
-        print('--> Running judge on test #%d:' % (run_count + 1,))
+    run_count = 0
+    if commands.testcases:
+        for root, dirs, files in os.walk(commands.testcases):
+            for name in files:
+                if name.find('.in') != -1:
+                    input_path = os.path.join(root, name)
+                    output_path = input_path.replace('.in', '.ans')
+                    if not os.path.exists(output_path):
+                        output_path = input_path.replace('.in', '.out')
+                    if not os.path.exists(output_path):
+                        if not comp_code.closed():
+                            comp_code.close()
+                        print(
+                            'pyjudge: fatal error: no standard output file found for standard input file %s', input_path)
+                        print('judge process terminated')
+                        return 1
+                    print('--> Running judge on test #%d:' % (run_count + 1,))
+                    comp_input = compiler.AdaptiveCompiler(
+                        input_path)
+                    comp_output = compiler.AdaptiveCompiler(
+                        output_path)
+                    j_worker = judger.DataComparisonJudger(
+                        input_handle=comp_input,
+                        out_handle=comp_code,
+                        stdout_handle=comp_output,
+                        seed=commands.seed)
+                    results = j_worker.judge(
+                        time_limit=commands.time_limit,
+                        memory_limit=commands.memory_limit)
+                    all_results.append(results)
+                    run_count += 1
+                    print('... Judge complete. Results:')
+                    print(results)
+                    if not comp_input.closed():
+                        comp_input.close()
+                    if not comp_output.closed():
+                        comp_output.close()
+    else:
+        comp_input = compiler.AdaptiveCompiler(
+            commands.input,
+            source_type=commands.input_type or None)
+        comp_output = compiler.AdaptiveCompiler(
+            commands.output,
+            source_type=commands.output_type or None)
+        print('--> Running judge on %s', commands.code)
+        j_worker = judger.DataComparisonJudger(
+            input_handle=comp_input,
+            out_handle=comp_code,
+            stdout_handle=comp_output,
+            seed=commands.seed)
         results = j_worker.judge(
             time_limit=commands.time_limit,
             memory_limit=commands.memory_limit)
-        all_results.append(results)
         print('... Judge complete. Results:')
         print(results)
-        continue
+        all_results.append(results)
 
     # Close compilers at termination
     if not comp_input.closed():
