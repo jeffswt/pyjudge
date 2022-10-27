@@ -1,0 +1,11 @@
+name: sum
+default:
+  time_limit: 500
+  memory_limit: 268435456
+  score: 70
+testcases:
+  sum2:
+    time_limit: 2000
+    memory_limit: 1073741824
+    score: 30
+    # subtask: 1

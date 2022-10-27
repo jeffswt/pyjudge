@@ -37,26 +37,60 @@ class JudgerResult:
         return
 
     def __repr__(self):
+
+        def time_cast(tim):
+            suf = 'ms'
+            if tim >= 1000:
+                tim /= 1000
+                suf = 's'
+                if tim >= 60:
+                    tim /= 60
+                    suf = 'min'
+                    if tim >= 60:
+                        tim /= 60
+                        suf = 'h'
+            return str(round(tim, 2)) + suf
+
+        def memory_cast(mem):
+            suf = 'bytes'
+            if mem >= 1024:
+                mem /= 1024
+                suf = 'KB'
+                if mem >= 1024:
+                    mem /= 1024
+                    suf = 'MB'
+                    if mem >= 1024:
+                        mem /= 1024
+                        suf = 'GB'
+            return str(round(mem, 2)) + suf
+
+        def cutdown(raw_str: str):
+            cutlen = 0
+            if len(raw_str) > 128:
+                cutlen = len(raw_str) - 128
+                raw_str = raw_str[:128] + \
+                    '...(omit %d characters)' % cutlen
+            return raw_str
+
         table_list = [
             ('Judge Result', status_codes[self.judge_result]),
-            ('Execution Time', self.out_execute_result.time),
-            ('Std Run Time', self.stdout_execute_result.time),
-            ('Memory Cost', self.out_execute_result.memory),
+            ('Execution Time', time_cast(self.out_execute_result.time)),
+            ('Memory Cost', memory_cast(self.out_execute_result.memory)),
             ('Return Code', self.out_execute_result.return_code),
             ('Compiler Output', self.out_compile_result.output),
         ]
         if self.judge_result == 'IJI':
             table_list += [
                 ('Input Compiler', self.input_compile_result.output),
-                ('Input', self.input_execute_result.stdout),
+                ('Input', cutdown(self.input_execute_result.stdout)),
             ]
         elif self.judge_result in {'CE', 'AC'}:
             pass
         else:
             table_list += [
-                ('Input', self.input_execute_result.stdout),
-                ('Output', self.out_execute_result.stdout),
-                ('Standard Output', self.stdout_execute_result.stdout),
+                ('Input', cutdown(self.input_execute_result.stdout)),
+                ('Output', cutdown(self.out_execute_result.stdout)),
+                ('Standard Output', cutdown(self.stdout_execute_result.stdout)),
             ]
         return repr(table.Table('Judge Results', table_list))
         pass

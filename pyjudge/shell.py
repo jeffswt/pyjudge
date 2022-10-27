@@ -1,57 +1,58 @@
 import os
 import json
-import optparse
+import argparse
 
 from . import compiler
 from . import judger
 from . import table
 from . import visualize
 
-__version = '20221026-dev'
+__version = '20221027-dev'
 
-opts = optparse.OptionParser(usage='pyjudge [OPTIONS]', version=__version)
+parser = argparse.ArgumentParser(
+    usage='pyjudge [OPTIONS]', description='A simple judger for OI/ACM.')
 
-opts.add_option('-i', '--input',
-                dest='input', type='string', default='',
-                help='Standard input to code')
-opts.add_option('--input-type',
-                dest='input_type', type='string', default='',
-                help='Force type of the standard input (Python/File...)')
-opts.add_option('-o', '--output',
-                dest='output', type='string', default='',
-                help='Standard output to be compared')
-opts.add_option('--output-type',
-                dest='output_type', type='string', default='',
-                help='Force type of the standard output (C++/Python/File...)')
-opts.add_option('-c', '--code',
-                dest='code', type='string', default='',
-                help='File of the user\'s code')
-opts.add_option('--code-type',
-                dest='code_type', type='string', default='',
-                help='Type of the user\'s code (C/C++/Python...)')
-opts.add_option('-x', '--count',
-                dest='count', type='int', default=1,
-                help='Iterations of judging')
-opts.add_option('-t', '--time-limit',
-                dest='time_limit', type='int', default=1000,
-                help='Time limit of execution (ms)')
-opts.add_option('-m', '--memory-limit',
-                dest='memory_limit', type='int', default=512*1024*1024,
-                help='Memory limit of execution (bytes)')
-opts.add_option('-s', '--seed',
-                dest='seed', type='int', default=0,
-                help='Force random seed')
-opts.add_option('-j', '--json-output',
-                dest='json_output_file', type='string', default='./results.json',
-                help='Output location of exact results in JSON')
-opts.add_option('--json-no-io',
-                dest='json_export_io', action='store_false', default=True,
-                help='Do not export Input/Output data in JSON')
-opts.add_option('-v', '--visualize',
-                dest='json_file', type='string', default='',
-                help='Visualize JSON output in HTML')
+parser.add_argument('-i', '--input',
+                    dest='input', type=str, default='',
+                    help='Standard input to code')
+parser.add_argument('--input-type',
+                    dest='input_type', type=str, default='',
+                    help='Force type of the standard input (Python/File...)')
+parser.add_argument('-o', '--output',
+                    dest='output', type=str, default='',
+                    help='Standard output to be compared')
+parser.add_argument('-io', '--test-cases',
+                    dest='testcases', type=str, default='',
+                    help='Folder to store Standard IO files')
+parser.add_argument('--output-type',
+                    dest='output_type', type=str, default='',
+                    help='Force type of the standard output (C++/Python/File...)')
+parser.add_argument('-c', '--code',
+                    dest='code', type=str, default='',
+                    help='File of the user\'s code')
+parser.add_argument('--code-type',
+                    dest='code_type', type=str, default='',
+                    help='Type of the user\'s code (C/C++/Python...)')
+parser.add_argument('-t', '--time-limit',
+                    dest='time_limit', type=int, default=1000,
+                    help='Time limit of execution (ms)')
+parser.add_argument('-m', '--memory-limit',
+                    dest='memory_limit', type=int, default=512*1024*1024,
+                    help='Memory limit of execution (bytes)')
+parser.add_argument('-s', '--seed',
+                    dest='seed', type=int, default=0,
+                    help='Force random seed')
+parser.add_argument('-j', '--json-output',
+                    dest='json_output_file', type=str, default='',
+                    help='Output location of exact results in JSON')
+parser.add_argument('--json-no-io',
+                    dest='json_export_io', action='store_false', default=True,
+                    help='Do not export Input/Output data in JSON')
+parser.add_argument('-v', '--visualize',
+                    dest='json_file', type=str, default='',
+                    help='Visualize JSON output in HTML')
 
-commands, args = opts.parse_args()
+commands = parser.parse_args()
 
 # Main function
 
@@ -75,9 +76,9 @@ def main():
 
     # Normal actions
     try:
-        if not commands.input:
+        if not commands.input and not commands.testcases:
             raise Exception()
-        if not commands.output:
+        if not commands.output and not commands.testcases:
             raise Exception()
         if not commands.code:
             raise Exception()
@@ -88,46 +89,73 @@ def main():
 
     # Compiling source codes
     print('--> Compiling source codes...')
-    # print('--> Compiling input source...')
-    comp_input = compiler.AdaptiveCompiler(
-        commands.input,
-        source_type=commands.input_type or None)
-    # comp_input.compile()
-    # print('... Compilation complete.')
 
-    # print('--> Compiling standard output...')
-    comp_output = compiler.AdaptiveCompiler(
-        commands.output,
-        source_type=commands.output_type or None)
-    # comp_output.compile()
-    # print('... Compilation complete.')
-
-    # print('--> Compiling user code...')
     comp_code = compiler.AdaptiveCompiler(
         commands.code,
         source_type=commands.code_type or None)
-    # comp_code.compile()
-    # print('... Compilation complete.')
+    comp_code.compile()
 
-    # Compile files with judger
-    j_worker = judger.DataComparisonJudger(
-        input_handle=comp_input,
-        out_handle=comp_code,
-        stdout_handle=comp_output,
-        seed=commands.seed)
     print('... Compilation complete.')
 
     # Judging results
     all_results = []
-    for run_count in range(0, commands.count):
-        print('--> Running judge on test #%d:' % (run_count + 1,))
+    run_count = 0
+    if commands.testcases:
+        for root, dirs, files in os.walk(commands.testcases):
+            for name in sorted(files):
+                if name.find('.in') != -1:
+                    input_path = os.path.join(root, name)
+                    output_path = input_path.replace('.in', '.ans')
+                    if not os.path.exists(output_path):
+                        output_path = input_path.replace('.in', '.out')
+                    if not os.path.exists(output_path):
+                        if not comp_code.closed():
+                            comp_code.close()
+                        print(
+                            'pyjudge: fatal error: no standard output file found for standard input file %s', input_path)
+                        print('judge process terminated')
+                        return 1
+                    print('--> Running judge on test #%d (%s):' %
+                          (run_count + 1, name.split('.')[0]))
+                    comp_input = compiler.AdaptiveCompiler(
+                        input_path)
+                    comp_output = compiler.AdaptiveCompiler(
+                        output_path)
+                    j_worker = judger.DataComparisonJudger(
+                        input_handle=comp_input,
+                        out_handle=comp_code,
+                        stdout_handle=comp_output,
+                        seed=commands.seed)
+                    results = j_worker.judge(
+                        time_limit=commands.time_limit,
+                        memory_limit=commands.memory_limit)
+                    all_results.append(results)
+                    run_count += 1
+                    print('... Judge complete. Results:')
+                    print(results)
+                    if not comp_input.closed():
+                        comp_input.close()
+                    if not comp_output.closed():
+                        comp_output.close()
+    else:
+        comp_input = compiler.AdaptiveCompiler(
+            commands.input,
+            source_type=commands.input_type or None)
+        comp_output = compiler.AdaptiveCompiler(
+            commands.output,
+            source_type=commands.output_type or None)
+        print('--> Judging %s' % commands.code)
+        j_worker = judger.DataComparisonJudger(
+            input_handle=comp_input,
+            out_handle=comp_code,
+            stdout_handle=comp_output,
+            seed=commands.seed)
         results = j_worker.judge(
             time_limit=commands.time_limit,
             memory_limit=commands.memory_limit)
-        all_results.append(results)
         print('... Judge complete. Results:')
         print(results)
-        continue
+        all_results.append(results)
 
     # Close compilers at termination
     if not comp_input.closed():
@@ -145,6 +173,9 @@ def main():
         tab_inp.append((i + 1, judger.status_codes[res.judge_result]))
     tab = table.Table(title='Aggregative results', data=tab_inp)
     print(tab)
+
+    if not commands.json_output_file:
+        return 0
 
     print('--> Writing results statistics to JSON...')
     json_output = {
@@ -203,8 +234,6 @@ def main():
         indent=4,
         sort_keys=True)
     try:
-        if not commands.json_output_file:
-            raise
         json_handle = open(commands.json_output_file, 'w', encoding='utf-8')
         json_handle.write(json_stringify)
         json_handle.flush()

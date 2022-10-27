@@ -20,7 +20,7 @@ __configs = {
     'table_max_lines': 20,
     'table_max_linewidth': 256,
     'gcc_args': ['gcc', '-O2', '-o', '{output_file}', '{source_file}'],
-    'g++_args': ['g++', '-O2', '-o', '{output_file}', '{source_file}'],
+    'g++_args': ['g++', '-O2', '-o', '{output_file}', '{source_file}', '-std=c++14'],
     'fpc_args': ['fpc', '{source_file}', '-o{output_file}'],
     'python2_args': ['python2', '{source_file}'],
     'python3_args': ['python3', '{source_file}'],

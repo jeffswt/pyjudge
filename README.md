@@ -1,4 +1,3 @@
-
 # pyJudge
 
 Input and output judger for OIers and *For Humans™*.
@@ -55,7 +54,7 @@ These are a list of available configurations that may be used throughout the
 execution of pyJudge:
 
 | Parameter           | Purpose                                                                       |
-|:--------------------|:------------------------------------------------------------------------------|
+| :------------------ | :---------------------------------------------------------------------------- |
 | tmp_dir             | Temporary directory for storing one-off files, e.g. G++ compiled executables. |
 | max_output          | Maximum allowed output size, not implemented yet.                             |
 | table_max_lines     | Maximum allowed lines in `table.Table` display, truncated when exceeded.      |
