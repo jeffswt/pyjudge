@@ -43,7 +43,7 @@ parser.add_argument('-s', '--seed',
                     dest='seed', type=int, default=0,
                     help='Force random seed')
 parser.add_argument('-j', '--json-output',
-                    dest='json_output_file', type=str, default='./results.json',
+                    dest='json_output_file', type=str, default='',
                     help='Output location of exact results in JSON')
 parser.add_argument('--json-no-io',
                     dest='json_export_io', action='store_false', default=True,
@@ -173,6 +173,9 @@ def main():
     tab = table.Table(title='Aggregative results', data=tab_inp)
     print(tab)
 
+    if not commands.json_output_file:
+        return 0
+
     print('--> Writing results statistics to JSON...')
     json_output = {
         'pyjudge-version': __version,
@@ -230,8 +233,6 @@ def main():
         indent=4,
         sort_keys=True)
     try:
-        if not commands.json_output_file:
-            raise
         json_handle = open(commands.json_output_file, 'w', encoding='utf-8')
         json_handle.write(json_stringify)
         json_handle.flush()
