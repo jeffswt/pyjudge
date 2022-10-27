@@ -102,7 +102,7 @@ def main():
     run_count = 0
     if commands.testcases:
         for root, dirs, files in os.walk(commands.testcases):
-            for name in files:
+            for name in sorted(files):
                 if name.find('.in') != -1:
                     input_path = os.path.join(root, name)
                     output_path = input_path.replace('.in', '.ans')
@@ -115,7 +115,8 @@ def main():
                             'pyjudge: fatal error: no standard output file found for standard input file %s', input_path)
                         print('judge process terminated')
                         return 1
-                    print('--> Running judge on test #%d:' % (run_count + 1,))
+                    print('--> Running judge on test #%d (%s):' %
+                          (run_count + 1, name.split('.')[0]))
                     comp_input = compiler.AdaptiveCompiler(
                         input_path)
                     comp_output = compiler.AdaptiveCompiler(
