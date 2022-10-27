@@ -82,9 +82,9 @@ html_template_data_main = r"""
 s_stdout = test['execution-status']['output']['stdout']
 s_userout = test['execution-status']['user-code']['stdout']
 s_stdin = test['execution-status']['input']['stdout']
-test['execution-status']['input']['stdout'] = s_stdout
+test['execution-status']['input']['stdout'] = s_stdin
 test['execution-status']['user-code']['stdout'] = s_userout
-test['execution-status']['output']['stdout'] = s_stdin
+test['execution-status']['output']['stdout'] = s_stdout
 %>
                         <div class="col-sm-4">
                             <h4><b>Input</b></h4>
