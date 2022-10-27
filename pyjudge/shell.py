@@ -143,7 +143,7 @@ def main():
         comp_output = compiler.AdaptiveCompiler(
             commands.output,
             source_type=commands.output_type or None)
-        print('--> Running judge on %s', commands.code)
+        print('--> Judging %s' % commands.code)
         j_worker = judger.DataComparisonJudger(
             input_handle=comp_input,
             out_handle=comp_code,
