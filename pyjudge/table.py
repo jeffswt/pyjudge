@@ -91,7 +91,7 @@ class Table:
         out_l = []
         out_l += self.join_wrap_lines(' ', self.title,
                                       lwidth=1, rwidth=console_width-1, ralign='left')
-        out_l.append('=' * row_widths[0] + '=+=' + '=' * row_widths[1])
+        out_l.append('=====')
         for row in self.data:
             tmp_l = self.join_wrap_lines(str(row[0]), str(
                 row[1]), lwidth=row_widths[0], rwidth=row_widths[1], lalign='right', ralign='left')
