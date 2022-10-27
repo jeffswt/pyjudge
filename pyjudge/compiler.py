@@ -289,6 +289,8 @@ class CLikeCompiler(Compiler):
         return
 
     def compile(self, override_command=None):
+        if override_command:
+            self.__c_args = override_command
         args = copy.deepcopy(self.__c_args)
         out_file = tmpmgmt.create_tmpfile()
         self.__c_executable = out_file

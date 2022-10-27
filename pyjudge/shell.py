@@ -1,6 +1,6 @@
 import os
 import json
-import optparse
+import argparse
 
 from . import compiler
 from . import judger
@@ -9,49 +9,50 @@ from . import visualize
 
 __version = '20221026-dev'
 
-opts = optparse.OptionParser(usage='pyjudge [OPTIONS]', version=__version)
+parser = argparse.ArgumentParser(
+    usage='pyjudge [OPTIONS]', description='A simple judger for OI/ACM.')
 
-opts.add_option('-i', '--input',
-                dest='input', type='string', default='',
-                help='Standard input to code')
-opts.add_option('--input-type',
-                dest='input_type', type='string', default='',
-                help='Force type of the standard input (Python/File...)')
-opts.add_option('-o', '--output',
-                dest='output', type='string', default='',
-                help='Standard output to be compared')
-opts.add_option('--output-type',
-                dest='output_type', type='string', default='',
-                help='Force type of the standard output (C++/Python/File...)')
-opts.add_option('-c', '--code',
-                dest='code', type='string', default='',
-                help='File of the user\'s code')
-opts.add_option('--code-type',
-                dest='code_type', type='string', default='',
-                help='Type of the user\'s code (C/C++/Python...)')
-opts.add_option('-x', '--count',
-                dest='count', type='int', default=1,
-                help='Iterations of judging')
-opts.add_option('-t', '--time-limit',
-                dest='time_limit', type='int', default=1000,
-                help='Time limit of execution (ms)')
-opts.add_option('-m', '--memory-limit',
-                dest='memory_limit', type='int', default=512*1024*1024,
-                help='Memory limit of execution (bytes)')
-opts.add_option('-s', '--seed',
-                dest='seed', type='int', default=0,
-                help='Force random seed')
-opts.add_option('-j', '--json-output',
-                dest='json_output_file', type='string', default='./results.json',
-                help='Output location of exact results in JSON')
-opts.add_option('--json-no-io',
-                dest='json_export_io', action='store_false', default=True,
-                help='Do not export Input/Output data in JSON')
-opts.add_option('-v', '--visualize',
-                dest='json_file', type='string', default='',
-                help='Visualize JSON output in HTML')
+parser.add_argument('-i', '--input',
+                    dest='input', type=str, default='',
+                    help='Standard input to code')
+parser.add_argument('--input-type',
+                    dest='input_type', type=str, default='',
+                    help='Force type of the standard input (Python/File...)')
+parser.add_argument('-o', '--output',
+                    dest='output', type=str, default='',
+                    help='Standard output to be compared')
+parser.add_argument('--output-type',
+                    dest='output_type', type=str, default='',
+                    help='Force type of the standard output (C++/Python/File...)')
+parser.add_argument('-c', '--code',
+                    dest='code', type=str, default='',
+                    help='File of the user\'s code')
+parser.add_argument('--code-type',
+                    dest='code_type', type=str, default='',
+                    help='Type of the user\'s code (C/C++/Python...)')
+parser.add_argument('-x', '--count',
+                    dest='count', type=int, default=1,
+                    help='Iterations of judging')
+parser.add_argument('-t', '--time-limit',
+                    dest='time_limit', type=int, default=1000,
+                    help='Time limit of execution (ms)')
+parser.add_argument('-m', '--memory-limit',
+                    dest='memory_limit', type=int, default=512*1024*1024,
+                    help='Memory limit of execution (bytes)')
+parser.add_argument('-s', '--seed',
+                    dest='seed', type=int, default=0,
+                    help='Force random seed')
+parser.add_argument('-j', '--json-output',
+                    dest='json_output_file', type=str, default='./results.json',
+                    help='Output location of exact results in JSON')
+parser.add_argument('--json-no-io',
+                    dest='json_export_io', action='store_false', default=True,
+                    help='Do not export Input/Output data in JSON')
+parser.add_argument('-v', '--visualize',
+                    dest='json_file', type=str, default='',
+                    help='Visualize JSON output in HTML')
 
-commands, args = opts.parse_args()
+commands = parser.parse_args()
 
 # Main function
 
