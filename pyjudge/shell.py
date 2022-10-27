@@ -1,4 +1,4 @@
-
+import os
 import json
 import optparse
 
@@ -7,55 +7,54 @@ from . import judger
 from . import table
 from . import visualize
 
-__version = '20161006-dev'
+__version = '20221026-dev'
 
 opts = optparse.OptionParser(usage='pyjudge [OPTIONS]', version=__version)
 
 opts.add_option('-i', '--input',
-        dest='input', type='string', default='',
-        help='Standard input to code')
+                dest='input', type='string', default='',
+                help='Standard input to code')
 opts.add_option('--input-type',
-        dest='input_type', type='string', default='',
-        help='Force type of the standard input (Python/File...)')
+                dest='input_type', type='string', default='',
+                help='Force type of the standard input (Python/File...)')
 opts.add_option('-o', '--output',
-        dest='output', type='string', default='',
-        help='Standard output to be compared')
+                dest='output', type='string', default='',
+                help='Standard output to be compared')
 opts.add_option('--output-type',
-        dest='output_type', type='string', default='',
-        help='Force type of the standard output (C++/Python/File...)')
+                dest='output_type', type='string', default='',
+                help='Force type of the standard output (C++/Python/File...)')
 opts.add_option('-c', '--code',
-        dest='code', type='string', default='',
-        help='File of the user\'s code')
+                dest='code', type='string', default='',
+                help='File of the user\'s code')
 opts.add_option('--code-type',
-        dest='code_type', type='string', default='',
-        help='Type of the user\'s code (C/C++/Python...)')
+                dest='code_type', type='string', default='',
+                help='Type of the user\'s code (C/C++/Python...)')
 opts.add_option('-x', '--count',
-        dest='count', type='int', default=1,
-        help='Iterations of judging')
+                dest='count', type='int', default=1,
+                help='Iterations of judging')
 opts.add_option('-t', '--time-limit',
-        dest='time_limit', type='float', default=1.0,
-        help='Time limit of execution')
+                dest='time_limit', type='int', default=1000,
+                help='Time limit of execution (ms)')
 opts.add_option('-m', '--memory-limit',
-        dest='memory_limit', type='int', default=0,
-        help='Memory limit of execution')
+                dest='memory_limit', type='int', default=512*1024*1024,
+                help='Memory limit of execution (bytes)')
 opts.add_option('-s', '--seed',
-        dest='seed', type='int', default=0,
-        help='Force random seed')
+                dest='seed', type='int', default=0,
+                help='Force random seed')
 opts.add_option('-j', '--json-output',
-        dest='json_output_file', type='string', default='./results.json',
-        help='Output location of exact results in JSON')
+                dest='json_output_file', type='string', default='./results.json',
+                help='Output location of exact results in JSON')
 opts.add_option('--json-no-io',
-        dest='json_export_io', action='store_false', default=True,
-        help='Do not export Input/Output data in JSON')
+                dest='json_export_io', action='store_false', default=True,
+                help='Do not export Input/Output data in JSON')
 opts.add_option('-v', '--visualize',
-        dest='json_file', type='string', default='',
-        help='Visualize JSON output in HTML')
+                dest='json_file', type='string', default='',
+                help='Visualize JSON output in HTML')
 
 commands, args = opts.parse_args()
 
 # Main function
 
-import os
 
 def main():
     if commands.json_file:
@@ -64,7 +63,8 @@ def main():
         f_handle.close()
         json_data = json.loads(json_stringify)
         html_data = visualize.create(json_data)
-        f_handle = open('./results.html', 'w', encoding='utf-8') # We are not using temp...
+        # We are not using temp...
+        f_handle = open('./results.html', 'w', encoding='utf-8')
         f_handle.write(html_data)
         f_handle.close()
         try:
@@ -91,30 +91,30 @@ def main():
     # print('--> Compiling input source...')
     comp_input = compiler.AdaptiveCompiler(
         commands.input,
-        source_type = commands.input_type or None)
+        source_type=commands.input_type or None)
     # comp_input.compile()
     # print('... Compilation complete.')
 
     # print('--> Compiling standard output...')
     comp_output = compiler.AdaptiveCompiler(
         commands.output,
-        source_type = commands.output_type or None)
+        source_type=commands.output_type or None)
     # comp_output.compile()
     # print('... Compilation complete.')
 
     # print('--> Compiling user code...')
     comp_code = compiler.AdaptiveCompiler(
         commands.code,
-        source_type = commands.code_type or None)
+        source_type=commands.code_type or None)
     # comp_code.compile()
     # print('... Compilation complete.')
 
     # Compile files with judger
     j_worker = judger.DataComparisonJudger(
-        input_handle = comp_input,
-        out_handle = comp_code,
-        stdout_handle = comp_output,
-        seed = commands.seed)
+        input_handle=comp_input,
+        out_handle=comp_code,
+        stdout_handle=comp_output,
+        seed=commands.seed)
     print('... Compilation complete.')
 
     # Judging results
@@ -122,8 +122,8 @@ def main():
     for run_count in range(0, commands.count):
         print('--> Running judge on test #%d:' % (run_count + 1,))
         results = j_worker.judge(
-            time_limit = commands.time_limit,
-            memory_limit = commands.memory_limit)
+            time_limit=commands.time_limit,
+            memory_limit=commands.memory_limit)
         all_results.append(results)
         print('... Judge complete. Results:')
         print(results)
@@ -200,8 +200,8 @@ def main():
         })
     json_stringify = json.dumps(
         json_output,
-        indent = 4,
-        sort_keys = True)
+        indent=4,
+        sort_keys=True)
     try:
         if not commands.json_output_file:
             raise

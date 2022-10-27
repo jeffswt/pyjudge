@@ -1,10 +1,10 @@
-
 import os
 import uuid
 
 from . import config
 
 __tmp_files = set()
+
 
 def create_tmpfile():
     tmp_dir = config.get_config('tmp_dir')
@@ -18,6 +18,7 @@ def create_tmpfile():
         continue
     __tmp_files.add(uid)
     return pth
+
 
 def remove_tmpfile(fil):
     tmp_dir = config.get_config('tmp_dir')
