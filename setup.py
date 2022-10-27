@@ -31,6 +31,7 @@ setup(
     ],
     install_requires = [
         'mako',
+        'psutil'
     ],
     entry_points = {
         'console_scripts': [
