@@ -66,9 +66,9 @@ class JudgerResult:
 
         def cutdown(raw_str: str):
             cutlen = 0
-            if len(raw_str) > 64:
-                cutlen = len(raw_str) - 64
-                raw_str = raw_str[:64] + \
+            if len(raw_str) > 128:
+                cutlen = len(raw_str) - 128
+                raw_str = raw_str[:128] + \
                     '...(omit %d characters)' % cutlen
             return raw_str
 
